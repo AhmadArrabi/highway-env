@@ -104,8 +104,8 @@ done = False
 while not done:
     env.step(env.action_space.sample())  # with manual control, these actions are ignored
     x = env.render('rgb_array')
-    img = np.array(Image.fromarray(x))
-    preprocessed = preProcessing(img)
+    #img = np.array(Image.fromarray(x))
+    #preprocessed = preProcessing(img)
 
     action = env.action_space.sample()
     obs, rewards, done, info = env.step(action)
