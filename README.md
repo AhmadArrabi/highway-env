@@ -5,5 +5,4 @@ This work provides the design and implementation of an autonomous parking system
 
 The simulation environment was developed using OpenAi’s ‘gym’ toolkit in conjunction with the ‘PyGame’ library for a graphical interface. The system is to be tested on a prototype of the parking system using NVIDIA’s ‘JetRacer’ robot.
 
-This repo holds all code used during training the RL method, where an openAi gym enviroment is developed
-
+This repo holds all code used during the training process of the RL models, where an openAi gym enviroment is developed
