@@ -116,7 +116,7 @@ class LaneGraphics(object):
     STRIPE_LENGTH: float = 3
     """ Length of a stripe [m]"""
 
-    STRIPE_WIDTH: float = 3#0.3
+    STRIPE_WIDTH: float = 10 #PARKING LINE WIDTH
     """ Width of a stripe [m]"""
 
     STRIPE_WIDTH_2: float = 0.3

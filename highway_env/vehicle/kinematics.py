@@ -20,9 +20,9 @@ class Vehicle(RoadObject):
     It's state is propagated depending on its steering and acceleration actions.
     """
 
-    LENGTH = 25.0
+    LENGTH = 107.0
     """ Vehicle length [m] """
-    WIDTH = 20.0
+    WIDTH = 85.0
     """ Vehicle width [m] """
     DEFAULT_SPEEDS = [23, 25]
     """ Range for random initial speeds [m/s] """

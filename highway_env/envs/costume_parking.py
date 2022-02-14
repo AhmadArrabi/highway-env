@@ -31,19 +31,19 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
                 "normalize": False
             },
             "action": {
-                "type": "ContinuousAction"
+                "type": "DiscreteAction"
             },
             "reward_weights": [1, 0.3, 0, 0, 0.02, 0.02],
             "success_goal_reward": 0.12,
             "collision_reward": -5,
-            "steering_range": np.deg2rad(45),
+            "steering_range": np.deg2rad(30),
             "simulation_frequency": 15,
             "policy_frequency": 5,
             "duration": 350,#MAX STEPS
-            "screen_width": 250, #DEFAULT: 600/300 I THINK 
-            "screen_height": 250,
+            "screen_width": 640, #640 x 480 same as output of the prepeocessed image (can be adjusted in the preprocess function)
+            "screen_height": 480,
             "centering_position": [0.5, 0.5],
-            "scaling": 2, #DEFAULT: 7
+            "scaling": 1, #DEFAULT: 7
             "controlled_vehicles": 1
         })
         return config
@@ -70,11 +70,11 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         AHMAD: HERE WE CAN CHANGE THE WIDTH AND LENGTH OF THE PARKING SPOTS
         """
         net = RoadNetwork()
-        width = 32
+        width = 110 #parking width (%130 of car width)
         lt = (LineType.CONTINUOUS, LineType.CONTINUOUS)
         x_offset = 0
-        y_offset = 29.4
-        length = 32.5
+        y_offset = 120 #street width
+        length = 115 #parking length (a bit longer than car length)
         for k in range(spots):
             x = (k - spots // 2) * (width + x_offset) - width / 2
             net.add_lane("a", "b", StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
