@@ -70,6 +70,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         AHMAD: HERE WE CAN CHANGE THE WIDTH AND LENGTH OF THE PARKING SPOTS
         """
         net = RoadNetwork()
+        road_lines = []
         width = 110 #parking width (%130 of car width)
         lt = (LineType.CONTINUOUS, LineType.CONTINUOUS)
         x_offset = 0
@@ -79,12 +80,15 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             x = (k - spots // 2) * (width + x_offset) - width / 2
             net.add_lane("a", "b", StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
             net.add_lane("b", "c", StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
+            road_lines.append(StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
+            road_lines.append(StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
 
         #net.add_lane('e','f', StraightLane([0,0], [200,0], width=0, line_types=(LineType.STRIPED, LineType.STRIPED)))
         #net.add_lane('e','f', StraightLane([0,0], [-200,0], width=0, line_types=(LineType.STRIPED, LineType.STRIPED)))
 
         self.road = Road(network=net,
                          np_random=self.np_random,
+                         road_lines=road_lines,
                          record_history=self.config["show_trajectories"])
 
     def _create_vehicles(self) -> None:

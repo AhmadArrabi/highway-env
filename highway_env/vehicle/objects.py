@@ -93,11 +93,31 @@ class RoadObject(ABC):
                 other.hit = True
 
     def _is_colliding(self, other, dt):
-        # Fast spherical pre-check
-        if np.linalg.norm(other.position - self.position) > self.LENGTH + self.speed * dt:
-            return False, False, np.zeros(2,)
+            # Fast spherical pre-check
+            if np.linalg.norm(other.position - self.position) > self.LENGTH + self.speed * dt:
+                return False, False, np.zeros(2,)
+            # Accurate rectangular check
+            return utils.are_polygons_intersecting(self.polygon(), other.polygon(), self.velocity * dt, other.velocity * dt)
+
+    def handle_line_collisions(self, other: 'AbstractLane', dt: float = 0) -> None:
+        """
+        Check for collision with lines.
+
+        :param other: lines
+        :param dt: timestep to check for future collisions (at constant velocity)
+        """
+        if not (self.collidable):
+            return
+        intersecting, will_intersect, transition = self._is_line_colliding(other, dt)
+        if intersecting:
+            if self.solid:
+                self.crashed = True
+            if not self.solid:
+                self.hit = True
+
+    def _is_line_colliding(self, other, dt):
         # Accurate rectangular check
-        return utils.are_polygons_intersecting(self.polygon(), other.polygon(), self.velocity * dt, other.velocity * dt)
+        return utils.are_polygons_intersecting(self.polygon(), other.polygon(), self.velocity * dt, 0)
 
     # Just added for sake of compatibility
     def to_dict(self, origin_vehicle=None, observe_intentions=True):

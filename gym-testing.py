@@ -107,8 +107,9 @@ while not done:
     #img = np.array(Image.fromarray(x))
     #preprocessed = preProcessing(img)
 
-    action = env.action_space.sample()
+    action = 5 #env.action_space.sample()
     obs, rewards, done, info = env.step(action)
+    print(info)
 
 #cv2.imshow('image', img)
 #cv2.imshow('preprocessed', preprocessed)

@@ -263,6 +263,7 @@ class Road(object):
                  network: RoadNetwork = None,
                  vehicles: List['kinematics.Vehicle'] = None,
                  road_objects: List['objects.RoadObject'] = None,
+                 road_lines: List['AbstractLane'] = None,
                  np_random: np.random.RandomState = None,
                  record_history: bool = False) -> None:
         """
@@ -277,6 +278,7 @@ class Road(object):
         self.network = network
         self.vehicles = vehicles or []
         self.objects = road_objects or []
+        self.lines = road_lines or []
         self.np_random = np_random if np_random else np.random.RandomState()
         self.record_history = record_history
 
@@ -311,6 +313,8 @@ class Road(object):
                 vehicle.handle_collisions(other, dt)
             for other in self.objects:
                 vehicle.handle_collisions(other, dt)
+            for other in self.lines:
+                vehicle.handle_line_collisions(other, dt)
 
     def neighbour_vehicles(self, vehicle: 'kinematics.Vehicle', lane_index: LaneIndex = None) \
             -> Tuple[Optional['kinematics.Vehicle'], Optional['kinematics.Vehicle']]:
