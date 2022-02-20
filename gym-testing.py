@@ -95,21 +95,26 @@ env.configure({
         "type": "DiscreteAction"
     }
 })
-env.reset()
+#env = gym.wrappers.Monitor(env, force=True, directory="run", video_callable=lambda e: True) 
 
-#---------save images----------
-#for i in range(100):
+# record all episodes
+# Feed the monitor to the wrapped environment, so it has access to the video recorder
+# and can send it intermediate simulation frames.
+#env.unwrapped.set_monitor(env)
 env.reset()
 done = False
+count = 0
 while not done:
-    env.step(env.action_space.sample())  # with manual control, these actions are ignored
+    count += 1
+    #env.step(env.action_space.sample())  # with manual control, these actions are ignored
     x = env.render('rgb_array')
     #img = np.array(Image.fromarray(x))
     #preprocessed = preProcessing(img)
 
-    action = 5 #env.action_space.sample()
+    action = 24 #env.action_space.sample()
     obs, rewards, done, info = env.step(action)
-    print(info)
+    print(count, info)
+    
 
 #cv2.imshow('image', img)
 #cv2.imshow('preprocessed', preprocessed)

@@ -1,10 +1,11 @@
 """EDFAULT SCREEN WIDTH/HEIGHT"""
 import copy
+from math import ceil, floor
 import os
 from typing import List, Tuple, Optional, Callable
 import gym
 from gym import Wrapper
-#from gym.spaces.discrete import Discrete
+from gym.spaces.discrete import Discrete
 from gym.spaces import Discrete, Box
 from gym.utils import seeding
 import numpy as np
@@ -96,7 +97,7 @@ class AbstractEnv(gym.Env):
                 "type": "Kinematics"
             },
             "action": {
-                "type": "DiscreteMetaAction"
+                "type": "DiscreteAction"
             },
             "simulation_frequency": 15,  # [Hz]
             "policy_frequency": 1,  # [Hz]
@@ -162,6 +163,7 @@ class AbstractEnv(gym.Env):
         """
         info = {
             "speed": self.vehicle.speed,
+            "angele": round(np.rad2deg(self.vehicle.action['steering'])),
             "crashed": self.vehicle.crashed,
             "action": action,
         }

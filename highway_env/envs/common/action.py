@@ -154,7 +154,12 @@ class DiscreteAction(ActionType):#ContinuousAction
         :param longitudinal: include longitudinal actions
         :param lateral: include lateral actions
         """
+        angle = np.deg2rad([-30, -20, -10, 0 , 10, 20, 30])
+        speed = [-20, -10, 0, 10, 20]
+        self.all_actions = list(product(angle, speed))
+
         super().__init__(env)
+
     #def __init__(self,
     #             env: 'AbstractEnv',
     #             acceleration_range: Optional[Tuple[float, float]] = None,
@@ -169,20 +174,16 @@ class DiscreteAction(ActionType):#ContinuousAction
     #    #self.actions_per_axis = actions_per_axis
 
     def space(self) -> spaces.Discrete:
-        return spaces.Discrete(21)
+        return spaces.Discrete(35)
 
     @property
     def vehicle_class(self) -> Callable:
         return Vehicle 
 
     def act(self, action: int) -> None:
-        list1 = [-10,0,10]
-        list2 = [-12,-9,-6,0,6,9,12]
-        all_actions = list(product(list1,list2))
-        #super().act2(all_actions[1])
         self.controlled_vehicle.act({
-                "speed": all_actions[action][1],
-                "steering": all_actions[action][0],
+                "speed": self.all_actions[action][1],
+                "steering": self.all_actions[action][0],
             })
         self.last_action = action
 
