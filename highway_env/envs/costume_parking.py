@@ -39,7 +39,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             "steering_range": np.deg2rad(30),
             "simulation_frequency": 15,
             "policy_frequency": 5,
-            "duration": 100,#MAX STEPS
+            "duration": 500,#MAX STEPS
             "screen_width": 640, #640 x 480 same as output of the prepeocessed image (can be adjusted in the preprocess function)
             "screen_height": 480,
             "centering_position": [0.5, 0.5],

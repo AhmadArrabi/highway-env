@@ -111,7 +111,7 @@ while not done:
     #img = np.array(Image.fromarray(x))
     #preprocessed = preProcessing(img)
 
-    action = 24 #env.action_space.sample()
+    action = 32 #env.action_space.sample()
     obs, rewards, done, info = env.step(action)
     print(count, info)
     

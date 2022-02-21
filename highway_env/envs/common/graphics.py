@@ -148,7 +148,8 @@ class EnvViewer(object):
     def window_position(self) -> np.ndarray:
         """the world position of the center of the displayed window."""
         if self.env.vehicle:
-            return self.env.vehicle.position
+            return np.array([-150, 0])  #static env position
+            #return self.env.vehicle.position #centered on vehicle
         else:
             return np.array([0, 0])
 

@@ -309,10 +309,10 @@ class Road(object):
         for vehicle in self.vehicles:
             vehicle.step(dt)
         for i, vehicle in enumerate(self.vehicles):
-            for other in self.vehicles[i+1:]:
-                vehicle.handle_collisions(other, dt)
-            for other in self.objects:
-                vehicle.handle_collisions(other, dt)
+            #for other in self.vehicles[i+1:]:
+            #    vehicle.handle_collisions(other, dt)
+            #for other in self.objects:
+            #    vehicle.handle_collisions(other, dt)
             for other in self.lines:
                 vehicle.handle_line_collisions(other, dt)
 

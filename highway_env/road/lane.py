@@ -170,9 +170,11 @@ class StraightLane(AbstractLane):
         points = np.array([
             self.start,
             self.end,
-            [self.end[0]+self.width, self.end[1]+self.length],
-            [self.start[0]+self.width, self.start[1]]
+            [self.end[0] + self.width, self.end[1] + self.length], 
+            [self.start[0] + self.width, self.start[1]] 
         ]).T
+
+        #print("points: ", points, "\n")
 
         identity = np.array([
             [1, 0],
