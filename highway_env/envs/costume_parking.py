@@ -80,6 +80,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             x = (k - spots // 2) * (width + x_offset) - width / 2
             net.add_lane("a", "b", StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
             net.add_lane("b", "c", StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
+            #print("[", x, ",", y_offset, "] [", x, ",", y_offset+length, "]\n[", x, ",", -y_offset, "] [", x, ",", -y_offset-length, "]\n")
             road_lines.append(StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
             road_lines.append(StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
 

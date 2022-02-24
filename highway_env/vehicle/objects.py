@@ -99,7 +99,7 @@ class RoadObject(ABC):
             # Accurate rectangular check
             return utils.are_polygons_intersecting(self.polygon(), other.polygon(), self.velocity * dt, other.velocity * dt)
 
-    def handle_line_collisions(self, other: 'AbstractLane', dt: float = 0) -> None:
+    def handle_line_collisions(self,dt: float = 0) -> None:#other: 'AbstractLane'
         """
         Check for collision with lines.
 
@@ -108,16 +108,25 @@ class RoadObject(ABC):
         """
         if not (self.collidable):
             return
-        intersecting, will_intersect, transition = self._is_line_colliding(other, dt)
+        intersecting, will_intersect, transition = self._is_line_colliding(dt)#other
         if intersecting:
             if self.solid:
                 self.crashed = True
             if not self.solid:
                 self.hit = True
 
-    def _is_line_colliding(self, other, dt):
+    def _is_line_colliding(self,dt):#other
         # Accurate rectangular check
-        return utils.are_polygons_intersecting(self.polygon(), other.polygon(), self.velocity * dt, 0)
+        points = np.array([
+           [-230.0  ,240],
+           [-230    ,120],
+           [-210    ,120],
+           [-210    ,240]
+        ])
+        
+        print("line: ", points, '\n')
+        poly = np.vstack([points, points[0:1]])
+        return utils.are_polygons_intersecting(self.polygon(), poly, self.velocity * dt, 0)
 
     # Just added for sake of compatibility
     def to_dict(self, origin_vehicle=None, observe_intentions=True):
@@ -161,6 +170,7 @@ class RoadObject(ABC):
             [s, c]
         ])
         points = (rotation @ points).T + np.tile(self.position, (4, 1))
+        print("car: ", points, '\n')
         return np.vstack([points, points[0:1]])
 
     def lane_distance_to(self, other: 'RoadObject', lane: 'AbstractLane' = None) -> float:

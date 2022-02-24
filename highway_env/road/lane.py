@@ -1,8 +1,10 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, List, Optional
 import numpy as np
+import pygame
 
 from highway_env import utils
+import highway_env
 from highway_env.utils import wrap_to_pi, Vector
 
 
@@ -170,17 +172,26 @@ class StraightLane(AbstractLane):
         points = np.array([
             self.start,
             self.end,
-            [self.end[0] + self.width, self.end[1] + self.length], 
-            [self.start[0] + self.width, self.start[1]] 
-        ]).T
+            self.start, 
+            self.end
+        ])
+        print('line: ', points, "\n")
+        return np.vstack([points, points[0:1]])
+
+        #points = np.array([
+        #    [-165, 235],
+        #    [-165.0, 120],
+        #    [-55, 235],
+        #    [-55, -120] 
+        #])
 
         #print("points: ", points, "\n")
 
-        identity = np.array([
-            [1, 0],
-            [0, 1]
-        ])
-        points = (identity @ points).T
+        #identity = np.array([
+        #    [1, 0],
+        #    [0, 1]
+        #])
+        #points = (identity @ points).T
         #points = np.array([
         #    [-self.length / 2, -self.width / 2],
         #    [-self.length / 2, +self.width / 2],
@@ -194,7 +205,8 @@ class StraightLane(AbstractLane):
         #])
         #points = (rotation @ points).T + np.tile(self.position, (4, 1))
         #points = points + np.tile(self.position, (4, 1))
-        return np.vstack([points, points[0:1]])
+    
+        
 
 
 class SineLane(StraightLane):

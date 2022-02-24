@@ -104,17 +104,24 @@ env.configure({
 env.reset()
 done = False
 count = 0
+
+for i in range(80): 
+    env.step(19)
+    env.render()
+
 while not done:
     count += 1
     #env.step(env.action_space.sample())  # with manual control, these actions are ignored
     x = env.render('rgb_array')
     #img = np.array(Image.fromarray(x))
     #preprocessed = preProcessing(img)
-
-    action = 32 #env.action_space.sample()
+    #19 straight
+    #24 speed 20 angle 10
+    #23 speed 10 angle 10
+    action = 30  #env.action_space.sample()
     obs, rewards, done, info = env.step(action)
-    print(count, info)
-    
+    print(count)#, info)
+
 
 #cv2.imshow('image', img)
 #cv2.imshow('preprocessed', preprocessed)
