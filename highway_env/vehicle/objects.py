@@ -115,19 +115,126 @@ class RoadObject(ABC):
             if not self.solid:
                 self.hit = True
 
-    def _is_line_colliding(self,dt):#other
-        # Accurate rectangular check
-        points = np.array([
-           [-230.0  ,240],
-           [-230    ,120],
-           [-210    ,120],
-           [-210    ,240]
-        ])
-        
-        print("line: ", points, '\n')
-        poly = np.vstack([points, points[0:1]])
-        return utils.are_polygons_intersecting(self.polygon(), poly, self.velocity * dt, 0)
+    # rectangular check
+    x1, x2, y1, y2 = -225.0, -211, 240, 120
+    x_offset = 110
 
+    # screen boarders
+    bottom_boarder = np.array([
+       [-470.0  ,240],
+       [-470    ,240],
+       [170     ,240],
+       [170     ,240]
+    ])
+
+    top_boarder = np.array([
+       [-470.0  ,-240],
+       [-470    ,-240],
+       [170     ,-240],
+       [170     ,-240]
+    ])
+
+    right_boarder = np.array([
+       [170.0   ,240],
+       [170     ,-240],
+       [170     ,-240],
+       [170     ,240]
+    ])
+
+    left_boarder = np.array([
+       [-470.0  ,240],
+       [-470    ,-240],
+       [-470    ,-240],
+       [-470    ,240]
+    ])
+
+    #top right polygon
+    points8 = np.array([
+       [x1+x_offset*3  ,-y1],
+       [x1+x_offset*3  ,-y2],
+       [x2+x_offset*3  ,-y2],
+       [x2+x_offset*3  ,-y1]
+    ])
+
+    #second top right polygon
+    points7 = np.array([
+       [x1+x_offset*2  ,-y1],
+       [x1+x_offset*2  ,-y2],
+       [x2+x_offset*2  ,-y2],
+       [x2+x_offset*2  ,-y1]
+    ])
+
+    #second top left polygon
+    points6 = np.array([
+       [x1+x_offset  ,-y1],
+       [x1+x_offset  ,-y2],
+       [x2+x_offset  ,-y2],
+       [x2+x_offset  ,-y1]
+    ])
+
+    #top left lane polygon
+    points5 = np.array([
+       [x1  ,-y1],
+       [x1  ,-y2],
+       [x2  ,-y2],
+       [x2  ,-y1]
+    ])
+
+    #bottom right lane polygon
+    points4 = np.array([
+       [x1+x_offset*3  ,y1],
+       [x1+x_offset*3  ,y2],
+       [x2+x_offset*3  ,y2],
+       [x2+x_offset*3  ,y1]
+    ])
+
+    #second bottom right lane polygon
+    points3 = np.array([
+       [x1+x_offset*2  ,y1],
+       [x1+x_offset*2  ,y2],
+       [x2+x_offset*2  ,y2],
+       [x2+x_offset*2  ,y1]
+    ])
+
+    #second bottom left lane polygon
+    points2 = np.array([
+       [x1+x_offset  ,y1],
+       [x1+x_offset  ,y2],
+       [x2+x_offset  ,y2],
+       [x2+x_offset  ,y1]
+    ])
+
+    #bottom left lane polygon
+    points = np.array([
+       [x1  ,y1],
+       [x1  ,y2],
+       [x2  ,y2],
+       [x2  ,y1]
+    ]) 
+
+    #list of all obstacles
+    Obstacles  = [top_boarder,
+                bottom_boarder,
+                right_boarder,
+                left_boarder,
+                points,
+                points2,
+                points3,
+                points4,
+                points5,
+                points6,
+                points7,
+                points8]   
+    
+    def _is_line_colliding(self,dt):#other
+        for obstacle in self.Obstacles:
+            poly = np.vstack([obstacle, obstacle[0:1]])
+            intersecting, will_intersect, transition = utils.are_polygons_intersecting(self.polygon(), poly, self.velocity * dt, 0)
+            if intersecting:
+                break
+        return intersecting, will_intersect, transition
+
+        
     # Just added for sake of compatibility
     def to_dict(self, origin_vehicle=None, observe_intentions=True):
         d = {
@@ -170,7 +277,7 @@ class RoadObject(ABC):
             [s, c]
         ])
         points = (rotation @ points).T + np.tile(self.position, (4, 1))
-        print("car: ", points, '\n')
+        #print("car: ", points, '\n')
         return np.vstack([points, points[0:1]])
 
     def lane_distance_to(self, other: 'RoadObject', lane: 'AbstractLane' = None) -> float:

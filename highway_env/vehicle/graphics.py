@@ -46,7 +46,7 @@ class VehicleGraphics(object):
             return
 
         v = vehicle
-        tire_length, tire_width = 8, 2 #1, 0.3
+        tire_length, tire_width = 0, 0 #1, 0.3
         headlight_length, headlight_width = 0.72, 0.6 
         roof_length, roof_width = 2.0, 1.5
 
