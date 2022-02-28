@@ -442,6 +442,7 @@ class KinematicsGoalObservation(KinematicObservation):
             "achieved_goal": obs / self.scales,
             "desired_goal": goal / self.scales
         }
+    
         return obs
 
 

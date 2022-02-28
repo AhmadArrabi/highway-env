@@ -168,16 +168,16 @@ class StraightLane(AbstractLane):
         lateral = np.dot(delta, self.direction_lateral)
         return float(longitudinal), float(lateral)
 
-    def polygon(self) -> np.ndarray:
-        points = np.array([
-            self.start,
-            self.end,
-            self.start, 
-            self.end
-        ])
-        print('line: ', points, "\n")
-        return np.vstack([points, points[0:1]])
-
+    #def polygon(self) -> np.ndarray:
+    #    points = np.array([
+    #        self.start,
+    #        self.end,
+    #        self.start, 
+    #        self.end
+    #    ])
+    #    print('line: ', points, "\n")
+    #    return np.vstack([points, points[0:1]])
+#
         #points = np.array([
         #    [-165, 235],
         #    [-165.0, 120],

@@ -70,7 +70,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         AHMAD: HERE WE CAN CHANGE THE WIDTH AND LENGTH OF THE PARKING SPOTS
         """
         net = RoadNetwork()
-        road_lines = []
+        #road_lines = []
         width = 110 #parking width (%130 of car width)
         lt = (LineType.CONTINUOUS, LineType.CONTINUOUS)
         x_offset = 0
@@ -81,22 +81,22 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             net.add_lane("a", "b", StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
             net.add_lane("b", "c", StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
             #print("[", x, ",", y_offset, "] [", x, ",", y_offset+length, "]\n[", x, ",", -y_offset, "] [", x, ",", -y_offset-length, "]\n")
-            road_lines.append(StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
-            road_lines.append(StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
+            #road_lines.append(StraightLane([x, y_offset], [x, y_offset+length], width=width, line_types=lt))
+            #road_lines.append(StraightLane([x, -y_offset], [x, -y_offset-length], width=width, line_types=lt))
 
         #net.add_lane('e','f', StraightLane([0,0], [200,0], width=0, line_types=(LineType.STRIPED, LineType.STRIPED)))
         #net.add_lane('e','f', StraightLane([0,0], [-200,0], width=0, line_types=(LineType.STRIPED, LineType.STRIPED)))
 
         self.road = Road(network=net,
                          np_random=self.np_random,
-                         road_lines=road_lines,
+                         #road_lines=road_lines,
                          record_history=self.config["show_trajectories"])
 
     def _create_vehicles(self) -> None:
         """Create some new random vehicles of a given type, and add them on the road."""
         self.controlled_vehicles = []
         for i in range(self.config["controlled_vehicles"]):
-            vehicle = self.action_type.vehicle_class(self.road, [-300, -180], 0, 0)#i*202*np.pi*self.np_random.rand() -300,50
+            vehicle = self.action_type.vehicle_class(self.road, [-300, 50], 0, 0)#i*202*np.pi*self.np_random.rand() -300,50
             self.road.vehicles.append(vehicle)
             #To add vehicles/ maybe occupied unocupied parkings
             #vehicle2 = self.action_type.vehicle_class(self.road, [i*5, 0], 2*np.pi*self.np_random.rand(), 0)
@@ -104,7 +104,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             self.controlled_vehicles.append(vehicle)
 
         lane = self.np_random.choice(self.road.network.lanes_list())
-        self.goal = Landmark(self.road, lane.position(lane.length/2, 0), heading=lane.heading)
+        self.goal = Landmark(self.road, lane.position(lane.length/2 + 40, 0), heading=lane.heading)
         self.road.objects.append(self.goal)
 
     def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5) -> float:

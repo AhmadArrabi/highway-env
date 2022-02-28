@@ -312,7 +312,7 @@ class RoadObjectGraphics:
         s = pygame.Surface((surface.pix(o.LENGTH), surface.pix(o.LENGTH)), pygame.SRCALPHA)  # per-pixel alpha
         rect = (0, surface.pix(o.WIDTH) / 2 - surface.pix(o.WIDTH) / 2, surface.pix(o.LENGTH), surface.pix(o.WIDTH))
         pygame.draw.rect(s, cls.get_color(o, transparent), rect, 0)
-        pygame.draw.rect(s, cls.BLACK, rect, 1)
+        pygame.draw.rect(s, cls.BLUE, rect, 1)
         if not offscreen:  # convert_alpha throws errors in offscreen mode TODO() Explain why
             s = pygame.Surface.convert_alpha(s)
         h = o.heading if abs(o.heading) > 2 * np.pi / 180 else 0
