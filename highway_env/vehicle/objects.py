@@ -277,7 +277,7 @@ class RoadObject(ABC):
             [s, c]
         ])
         points = (rotation @ points).T + np.tile(self.position, (4, 1))
-        #print("car: ", points, '\n')
+        #print("car: ", np.vstack([points, points[0:1]]), '\n')
         return np.vstack([points, points[0:1]])
 
     def lane_distance_to(self, other: 'RoadObject', lane: 'AbstractLane' = None) -> float:

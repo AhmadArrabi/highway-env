@@ -1,4 +1,5 @@
 from itertools import product
+from turtle import shape
 from typing import List, Dict, TYPE_CHECKING, Optional, Union, Tuple
 from gym import spaces
 import numpy as np
@@ -601,6 +602,32 @@ class LidarObservation(ObservationType):
     def index_to_direction(self, index: int) -> np.ndarray:
         return np.array([[np.cos(index * self.angle)], [np.sin(index * self.angle)]])
 
+class ParkingDistanceObservation(ObservationType):
+    def __init__(self, env: 'AbstractEnv'):
+        super().__init__(env)
+        
+
+    def space(self) -> spaces.Space:
+        return spaces.Box(shape=(4,), low=0, high=800, dtype=np.float32)
+
+    def observe(self) -> np.ndarray:
+        obs = np.ndarray(shape=self.space().shape)
+        left_lane = self.observer_vehicle.Obstacles[4]
+        right_lane = self.observer_vehicle.Obstacles[5]
+        bottom_left_point = left_lane[2]
+        top_left_point = left_lane[3]
+        top_right_point = right_lane[1]
+        bottom_right_point = right_lane[0]
+
+        polygon = self.observer_vehicle.polygon()
+
+        obs[0] = np.linalg.norm(polygon[0] - top_right_point)
+        obs[1] = np.linalg.norm(polygon[1] - top_left_point)
+        obs[2] = np.linalg.norm(polygon[2] - bottom_left_point)
+        obs[3] = np.linalg.norm(polygon[3] - bottom_right_point)
+
+        return obs
+        
 
 def observation_factory(env: 'AbstractEnv', config: dict) -> ObservationType:
     if config["type"] == "TimeToCollision":
@@ -621,6 +648,8 @@ def observation_factory(env: 'AbstractEnv', config: dict) -> ObservationType:
         return LidarObservation(env, **config)
     elif config["type"] == "ExitObservation":
         return ExitObservation(env, **config)
+    elif config["type"] == "ParkingDistanceObservation":
+        return ParkingDistanceObservation(env)
     else:
         raise ValueError("Unknown observation type")
 

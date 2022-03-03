@@ -19,17 +19,17 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
 
     Credits to Munir Jojo-Verge for the idea and initial implementation.
     """
-
+#"observation": {
+            #    "type": "KinematicsGoal",
+            #    "features": ['x', 'y', 'vx', 'vy', 'cos_h', 'sin_h'],
+            #    "scales": [100, 100, 5, 5, 1, 1],
+            #    "normalize": False
+            #},
     @classmethod
     def default_config(cls) -> dict:
         config = super().default_config()
         config.update({
-            "observation": {
-                "type": "KinematicsGoal",
-                "features": ['x', 'y', 'vx', 'vy', 'cos_h', 'sin_h'],
-                "scales": [100, 100, 5, 5, 1, 1],
-                "normalize": False
-            },
+            "observation" : {"type": "ParkingDistanceObservation"},
             "action": {
                 "type": "DiscreteAction"
             },
@@ -108,6 +108,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         self.road.objects.append(self.goal)
 
     def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5) -> float:
+        pass
         """
         Proximity to the goal is rewarded
 
@@ -122,12 +123,14 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         return -np.power(np.dot(np.abs(achieved_goal - desired_goal), np.array(self.config["reward_weights"])), p)
 
     def _reward(self, action: np.ndarray) -> float:
+        pass
         obs = self.observation_type.observe()
         obs = obs if isinstance(obs, tuple) else (obs,)
         return sum(self.compute_reward(agent_obs['achieved_goal'], agent_obs['desired_goal'], {})
                      for agent_obs in obs)
 
     def _is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> bool:
+        pass
         return self.compute_reward(achieved_goal, desired_goal, {}) > -self.config["success_goal_reward"]
 
     def _is_terminal(self) -> bool:

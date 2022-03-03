@@ -106,23 +106,23 @@ done = False
 count = 0
 
 
-for i in range(10): 
-    env.step(19)
-    env.render()
+#for i in range(10): 
+#    env.step(19)
+#    env.render()
 
-while not done:
-    count += 1
+#while not done:
+count += 1
     #env.step(env.action_space.sample())  # with manual control, these actions are ignored
-    x = env.render('rgb_array')
+x = env.render('rgb_array')
     #img = np.array(Image.fromarray(x))
     #preprocessed = preProcessing(img)
     #19 straight
     #15 backwards
     #24 speed 20 angle 10
     #23 speed 10 angle 10
-    action = 0  #env.action_space.sample()
-    obs, rewards, done, info = env.step(action)
-    print(count, info)
+action = 19  #env.action_space.sample()
+obs, rewards, done, info = env.step(action)
+print(count, info)
 
 
 #cv2.imshow('image', img)
