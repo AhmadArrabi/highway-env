@@ -53,7 +53,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         if isinstance(self.observation_type, MultiAgentObservation):
             success = tuple(self._is_success(agent_obs['achieved_goal'], agent_obs['desired_goal']) for agent_obs in obs)
         else:
-            success = self._is_success(obs['achieved_goal'], obs['desired_goal'])
+            success = self._is_success(obs)#(obs['achieved_goal'], obs['desired_goal'])
         info.update({"is_success": success})
         return info
 
@@ -107,40 +107,62 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         self.goal = Landmark(self.road, lane.position(lane.length/2 + 40, 0), heading=lane.heading)
         self.road.objects.append(self.goal)
 
-    def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5) -> float:
-        pass
-        """
-        Proximity to the goal is rewarded
-
-        We use a weighted p-norm
-
-        :param achieved_goal: the goal that was achieved
-        :param desired_goal: the goal that was desired
-        :param dict info: any supplementary information
-        :param p: the Lp^p norm used in the reward. Use p<1 to have high kurtosis for rewards in [0, 1]
-        :return: the corresponding reward
-        """
-        return -np.power(np.dot(np.abs(achieved_goal - desired_goal), np.array(self.config["reward_weights"])), p)
+    def compute_reward(self, obs: np.ndarray) -> float:
+        if ((obs[0] < 15) & (obs[1] < 15) & (obs[2] < 15) & (obs[3] < 15)):
+            return 200
+        elif any(vehicle.crashed for vehicle in self.controlled_vehicles):
+            return -20
+        else:
+            return -5
 
     def _reward(self, action: np.ndarray) -> float:
-        pass
         obs = self.observation_type.observe()
-        obs = obs if isinstance(obs, tuple) else (obs,)
-        return sum(self.compute_reward(agent_obs['achieved_goal'], agent_obs['desired_goal'], {})
-                     for agent_obs in obs)
+        #obs = obs if isinstance(obs, tuple) else (obs,)
+        return self.compute_reward(obs)
 
-    def _is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> bool:
-        pass
-        return self.compute_reward(achieved_goal, desired_goal, {}) > -self.config["success_goal_reward"]
+    def _is_success(self, obs) -> bool:
+        return ((obs[0] < 15) & (obs[1] < 15) & (obs[2] < 15) & (obs[3] < 15))
 
     def _is_terminal(self) -> bool:
         """The episode is over if the ego vehicle crashed or the goal is reached."""
         time = self.steps >= self.config["duration"]
         crashed = any(vehicle.crashed for vehicle in self.controlled_vehicles)
         obs = self.observation_type.observe()
-        obs = obs if isinstance(obs, tuple) else (obs,)
-        success = all(self._is_success(agent_obs['achieved_goal'], agent_obs['desired_goal']) for agent_obs in obs)
+        #obs = obs if isinstance(obs, tuple) else (obs,)
+        success = self._is_success(obs)
         return time or crashed or success
+
+    #def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5) -> float:
+    #    """
+    #    Proximity to the goal is rewarded
+#
+    #    We use a weighted p-norm
+#
+    #    :param achieved_goal: the goal that was achieved
+    #    :param desired_goal: the goal that was desired
+    #    :param dict info: any supplementary information
+    #    :param p: the Lp^p norm used in the reward. Use p<1 to have high kurtosis for rewards in [0, 1]
+    #    :return: the corresponding reward
+    #    """
+    #    return -np.power(np.dot(np.abs(achieved_goal - desired_goal), np.array(self.config["reward_weights"])), p)
+#
+    #def _reward(self, action: np.ndarray) -> float:
+    #    obs = self.observation_type.observe()
+    #    obs = obs if isinstance(obs, tuple) else (obs,)
+    #    return sum(self.compute_reward(agent_obs['achieved_goal'], agent_obs['desired_goal'], {})
+    #                 for agent_obs in obs)
+#
+    #def _is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> bool:
+    #    return self.compute_reward(achieved_goal, desired_goal, {}) > -self.config["success_goal_reward"]
+#
+    #def _is_terminal(self) -> bool:
+    #    """The episode is over if the ego vehicle crashed or the goal is reached."""
+    #    time = self.steps >= self.config["duration"]
+    #    crashed = any(vehicle.crashed for vehicle in self.controlled_vehicles)
+    #    obs = self.observation_type.observe()
+    #    obs = obs if isinstance(obs, tuple) else (obs,)
+    #    success = all(self._is_success(agent_obs['achieved_goal'], agent_obs['desired_goal']) for agent_obs in obs)
+    #    return time or crashed or success
 
 
 class CostumeParkingEnvActionRepeat(CostumeParkingEnv):
