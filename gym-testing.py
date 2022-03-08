@@ -1,5 +1,7 @@
 import gym
 import random
+
+from sqlalchemy import false
 import highway_env
 import matplotlib.pyplot as plt
 import matplotlib
@@ -95,35 +97,68 @@ env.configure({
         "type": "DiscreteAction"
     }
 })
+
 #env = gym.wrappers.Monitor(env, force=True, directory="run", video_callable=lambda e: True) 
 
 # record all episodes
 # Feed the monitor to the wrapped environment, so it has access to the video recorder
 # and can send it intermediate simulation frames.
 #env.unwrapped.set_monitor(env)
+"""
+print("Action Space: ",env.action_space, "\nState Space: ", env.observation_space)
+env.reset()
+for i in range(5):
+    print("Action sample: ", env.action_space.sample())
+    
+for i in range(20):
+    obs, rewards, done, info = env.step(19)
+    env.render()
+    print("Info function: ", info)
+"""
+
 env.reset()
 done = False
 count = 0
 
+import gym
 
-#for i in range(10): 
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_util import make_vec_env
+
+model2 = PPO("MlpPolicy", env, verbose=1)
+model2.learn(total_timesteps=10000)
+model2.save("ppo_cartpole_2")
+
+del model2 # remove to demonstrate saving and loading
+
+model2 = PPO.load("ppo_cartpole_2")
+
+obs = env.reset()
+done = False
+while not done:
+    action, _states = model2.predict(obs)
+    obs, rewards, done, info = env.step(action)
+    env.render()
+    print(rewards)
+
+#for i in range(20): 
 #    env.step(19)
 #    env.render()
-
-while not done:
-    count += 1
-        #env.step(env.action_space.sample())  # with manual control, these actions are ignored
-    x = env.render('rgb_array')
-        #img = np.array(Image.fromarray(x))
-        #preprocessed = preProcessing(img)
-        #19 straight
-        #15 backwards
-        #24 speed 20 angle 10
-        #23 speed 10 angle 10
-    action = 19#env.action_space.sample()
-    obs, rewards, done, info = env.step(action)
-    print(count, rewards)
-
+#
+#while not done:
+#    count += 1
+#        #env.step(env.action_space.sample())  # with manual control, these actions are ignored
+#    x = env.render('rgb_array')
+#        #img = np.array(Image.fromarray(x))
+#        #preprocessed = preProcessing(img)
+#        #19 straight
+#        #15 backwards
+#        #24 speed 20 angle 10
+#        #23 speed 10 angle 10
+#    action = 24 #env.action_space.sample()
+#    obs, rewards, done, info = env.step(action)
+#    print(count, rewards)
+#
 
 #cv2.imshow('image', img)
 #cv2.imshow('preprocessed', preprocessed)

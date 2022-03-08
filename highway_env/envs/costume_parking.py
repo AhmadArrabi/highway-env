@@ -39,7 +39,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
             "steering_range": np.deg2rad(30),
             "simulation_frequency": 15,
             "policy_frequency": 5,
-            "duration": 500,#MAX STEPS
+            "duration": 10000,#MAX STEPS
             "screen_width": 640, #640 x 480 same as output of the prepeocessed image (can be adjusted in the preprocess function)
             "screen_height": 480,
             "centering_position": [0.5, 0.5],
@@ -108,12 +108,17 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         self.road.objects.append(self.goal)
 
     def compute_reward(self, obs: np.ndarray) -> float:
-        if ((obs[0] < 15) & (obs[1] < 15) & (obs[2] < 15) & (obs[3] < 15)):
-            return 200
+        if ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30)):
+            return 500
         elif any(vehicle.crashed for vehicle in self.controlled_vehicles):
-            return -20
-        else:
-            return -5
+            return -2000
+        else: return -(obs[2]+obs[3])/100
+        #elif ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30)):
+        #    return 50
+        #elif any(vehicle.crashed for vehicle in self.controlled_vehicles):
+        #    return -100
+        #else:
+        #    return -5
 
     def _reward(self, action: np.ndarray) -> float:
         obs = self.observation_type.observe()
@@ -121,7 +126,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
         return self.compute_reward(obs)
 
     def _is_success(self, obs) -> bool:
-        return ((obs[0] < 15) & (obs[1] < 15) & (obs[2] < 15) & (obs[3] < 15))
+        return ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30))
 
     def _is_terminal(self) -> bool:
         """The episode is over if the ego vehicle crashed or the goal is reached."""
@@ -144,7 +149,7 @@ class CostumeParkingEnv(AbstractEnv, GoalEnv):
     #    :param p: the Lp^p norm used in the reward. Use p<1 to have high kurtosis for rewards in [0, 1]
     #    :return: the corresponding reward
     #    """
-    #    return -np.power(np.dot(np.abs(achieved_goal - desired_goal), np.array(self.config["reward_weights"])), p)
+    #    return 
 #
     #def _reward(self, action: np.ndarray) -> float:
     #    obs = self.observation_type.observe()

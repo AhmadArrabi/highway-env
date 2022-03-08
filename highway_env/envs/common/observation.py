@@ -614,12 +614,15 @@ class ParkingDistanceObservation(ObservationType):
         obs = np.ndarray(shape=self.space().shape)
         left_lane = self.observer_vehicle.Obstacles[4]
         right_lane = self.observer_vehicle.Obstacles[5]
-        bottom_left_point = left_lane[2]
-        top_left_point = left_lane[3]
+        bottom_left_point = left_lane[3]
+        top_left_point = left_lane[2]
         top_right_point = right_lane[1]
         bottom_right_point = right_lane[0]
 
         polygon = self.observer_vehicle.polygon()
+
+        #print("\nTR", top_right_point, "\nBR", bottom_right_point, "\nBL", bottom_left_point, "\nTL", top_left_point)
+        #print("\nPolygon", polygon)
 
         obs[0] = np.linalg.norm(polygon[0] - top_right_point)
         obs[1] = np.linalg.norm(polygon[1] - top_left_point)
