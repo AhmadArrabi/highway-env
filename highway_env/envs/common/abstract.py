@@ -64,7 +64,7 @@ class AbstractEnv(gym.Env):
         # Running
         self.time = 0  # Simulation time
         self.steps = 0  # Actions performed
-        self.done = False
+        self.done = bool(False)
 
         # Rendering
         self.viewer = None
@@ -193,7 +193,7 @@ class AbstractEnv(gym.Env):
         self.update_metadata()
         self.define_spaces()  # First, to set the controlled vehicle class depending on action space
         self.time = self.steps = 0
-        self.done = False
+        self.done = bool(False)
         self._reset()
         self.define_spaces()  # Second, to link the obs and actions to the vehicles once the scene is created
         return self.observation_type.observe()
@@ -278,7 +278,7 @@ class AbstractEnv(gym.Env):
 
         Will close the environment viewer if it exists.
         """
-        self.done = True
+        self.done = bool(True)
         if self.viewer is not None:
             self.viewer.close()
         self.viewer = None

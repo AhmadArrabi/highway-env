@@ -606,7 +606,6 @@ class ParkingDistanceObservation(ObservationType):
     def __init__(self, env: 'AbstractEnv'):
         super().__init__(env)
         
-
     def space(self) -> spaces.Space:
         return spaces.Box(shape=(4,), low=0, high=800, dtype=np.float32)
 
@@ -630,7 +629,49 @@ class ParkingDistanceObservation(ObservationType):
         obs[3] = np.linalg.norm(polygon[3] - bottom_right_point)
 
         return obs
-        
+
+class myGoalObseravations(ObservationType):
+    def __init__(self, env: 'AbstractEnv'):
+        super().__init__(env)
+
+    def space(self) -> spaces.Space:
+        try:
+            obs = self.observe()
+            return spaces.Dict(dict(
+                desired_goal=spaces.Box(0, 800, shape=(1,), dtype=np.float),
+                achieved_goal=spaces.Box(0, 800, shape=(1,), dtype=np.float),
+                observation=spaces.Box(0, 800, shape=(1,), dtype=np.float),
+            ))
+        except AttributeError:
+            return spaces.Space()
+
+    def observe(self) -> Dict[str, np.ndarray]:
+        state = np.ndarray(4,)
+        left_lane = self.observer_vehicle.Obstacles[4]
+        right_lane = self.observer_vehicle.Obstacles[5]
+        bottom_left_point = left_lane[3]
+        top_left_point = left_lane[2]
+        top_right_point = right_lane[1]
+        bottom_right_point = right_lane[0]
+
+        polygon = self.observer_vehicle.polygon()
+
+        state[0] = np.linalg.norm(polygon[0] - top_right_point)
+        state[1] = np.linalg.norm(polygon[1] - top_left_point)
+        state[2] = np.linalg.norm(polygon[2] - bottom_left_point)
+        state[3] = np.linalg.norm(polygon[3] - bottom_right_point)
+
+        new_state = np.array([np.sum(np.abs(state))/4])
+
+        goal = np.array([20])
+
+        obs = {
+            "observation": new_state,
+            "achieved_goal": new_state,
+            "desired_goal": goal
+        }
+    
+        return obs        
 
 def observation_factory(env: 'AbstractEnv', config: dict) -> ObservationType:
     if config["type"] == "TimeToCollision":
@@ -653,6 +694,8 @@ def observation_factory(env: 'AbstractEnv', config: dict) -> ObservationType:
         return ExitObservation(env, **config)
     elif config["type"] == "ParkingDistanceObservation":
         return ParkingDistanceObservation(env)
+    elif config["type"] == "myGoalObseravations":
+        return myGoalObseravations(env)
     else:
         raise ValueError("Unknown observation type")
 

@@ -1,6 +1,6 @@
+from math import gamma
 import gym
 import random
-
 from sqlalchemy import false
 import highway_env
 import matplotlib.pyplot as plt
@@ -16,135 +16,52 @@ import argparse
 import imutils
 import cv2
 import os
-#it's hamza
 from numpy import array, inf
 from numpy.core.fromnumeric import shape
-#
-##funnctions
-#PreProcessing function, takes a rendered image and return the state of the agent (distances)
-def preProcessing(input: np.ndarray):
-    gray = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (7, 7), 0)
-
-    # perform edge detection, then perform a dilation + erosion to
-    # close gaps in between object edges
-    edged = cv2.Canny(gray, 50, 100)
-    edged = cv2.dilate(edged, None, iterations=1)
-    edged = cv2.erode(edged, None, iterations=1)
-
-    # find contours in the edge map
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    #output = Image.fromarray(edged)
-    ##print(shape(cnts))
-    
-    ##print("Number of contours: ", str(len(cnts)))
-    cv2.drawContours(input, cnts, 0, (0,255,0), 1)
-    return edged
-    ##print(cnts[0], "####")
-    ##print(cnts[0][0], "####")
-    ##print(cnts[0][0][0],"#####")
-    ##print(cnts[0][0][0][0],"#####")
-
-    ##distanceMin = 99999999
-    ##for xA, yA in cnts[0]:
-    ##    for xB, yB in cnts[1]:
-    ##        distance = ((xB-xA)**2+(yB-yA)**2)**(1/2) # distance formula
-    ##        if (distance < distanceMin):
-    ##            distanceMin = distance
-    ##print(distanceMin)
-
-    #cv2.imshow("contours",input)
-#    cv2.waitKey(0)
-#    cv2.destroyAllWindows()
-#
-#    #path = "D:\\University\\Graduation Project\\documentation\\figures\\parkings"
-#    #fullpath = os.path.join(path, 'preprocessed' + '.' + '.png')
-#    #output.save(fullpath)
-#
-#
-##
-#
-#def preProcessing2(input):  
-#    #input = input[1:1280,155:1500]  
-#    gray = cv2.cvtColor(input, cv2.COLOR_BGR2GRAY)
-#    blur = cv2.GaussianBlur(gray, (7,7), 0)
-#    thresh = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 100)
-#
-#    # Dilate to combine adjacent text contours
-#    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9,9))
-#    dilate = cv2.dilate(thresh, kernel, iterations=3)
-#    s=dilate
-#    # Find contours, highlight text areas, and extract ROIs
-#    cnts = cv2.findContours(s, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-#    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-#    if(len(cnts)):
-#        line_items_coordinates = []
-#        for c in cnts:
-#            area = cv2.contourArea(c)
-#            x,y,w,h = cv2.boundingRect(c)
-#            image = cv2.rectangle(input, (x,y), (x+w, y+h), color=(0,255,0), thickness=2)
-#            line_items_coordinates.append([(x,y), (x+w, y+h)])
-#        return image
-#    else:
-#        return input
-#
-#env setup
-env_name = "costume-parking-v0"
-env = gym.make(env_name)
-env.configure({
-    "action": {
-        "type": "DiscreteAction"
-    }
-})
-
-#env = gym.wrappers.Monitor(env, force=True, directory="run", video_callable=lambda e: True) 
-
-# record all episodes
-# Feed the monitor to the wrapped environment, so it has access to the video recorder
-# and can send it intermediate simulation frames.
-#env.unwrapped.set_monitor(env)
-"""
-print("Action Space: ",env.action_space, "\nState Space: ", env.observation_space)
-env.reset()
-for i in range(5):
-    print("Action sample: ", env.action_space.sample())
-    
-for i in range(20):
-    obs, rewards, done, info = env.step(19)
-    env.render()
-    print("Info function: ", info)
-"""
-
-env.reset()
-done = False
-count = 0
-
 import gym
 
 from stable_baselines3 import PPO
+from stable_baselines3 import A2C
 from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.env_checker import check_env
 
-model2 = PPO("MlpPolicy", env, verbose=1)
-model2.learn(total_timesteps=10000)
-model2.save("ppo_cartpole_2")
+env_name = "costume-parking-v0"
+env = gym.make(env_name)
 
-del model2 # remove to demonstrate saving and loading
+log_path = os.path.join("training", "logs")
+model_name = "A2C_low2_gamma"
+model_path = os.path.join("training", "saved_models", model_name)
 
-model2 = PPO.load("ppo_cartpole_2")
+#print(check_env(env))
 
-obs = env.reset()
+#model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=log_path, gamma = 0.05)
+#model.learn(total_timesteps=20000)
+#model.save(model_path)
+
+#del model # remove to demonstrate saving and loading
+
+#model = A2C.load(model_path, env=env)
+
+#model.learn(total_timesteps=30000)
+
+#model.save(model_path)
+
 done = False
+obs = env.reset()
+
 while not done:
-    action, _states = model2.predict(obs)
+    #action, _states = model.predict(obs)
+    action = 19
     obs, rewards, done, info = env.step(action)
     env.render()
-    print(rewards)
+    print(info)
 
 #for i in range(20): 
 #    env.step(19)
 #    env.render()
 #
+#count =0
+#done = False
 #while not done:
 #    count += 1
 #        #env.step(env.action_space.sample())  # with manual control, these actions are ignored
@@ -157,46 +74,5 @@ while not done:
 #        #23 speed 10 angle 10
 #    action = 24 #env.action_space.sample()
 #    obs, rewards, done, info = env.step(action)
-#    print(count, rewards)
+#    print(count, rewards, info)
 #
-
-#cv2.imshow('image', img)
-#cv2.imshow('preprocessed', preprocessed)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()    
-
-#path = "D:\\University\\Graduation Project\\documentation\\figures\\parkings"   
-#fullpath = os.path.join(path, '2D' + '.' + '.png')
-#img = Image.fromarray(img)
-#img.save(fullpath)
-
-
-
-#plt.imshow(x)
-
-   
-#print(shape(img), type(img))
-
-#preProcessing(img)
-
-#-------for manual driving------#
-#env.configure({
-#    "manual_control": True
-#})
-#env.reset()
-#done = False
-#while not done:
-#    env.step(env.action_space.sample())  # with manual control, these actions are ignored
-#    env.render()
-#RL standard loop
-#c=0
-#while True:
-#    c+=1
-#    print(c)
-#    action = env.action_space.sample()
-#    obs, rewards, done, info = env.step(action)
-#    env.render()
-#    print(info)
-#
-#    if done:
-#        break
