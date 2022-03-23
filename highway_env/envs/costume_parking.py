@@ -3,6 +3,7 @@
 from gym.envs.registration import register
 from gym import GoalEnv
 import numpy as np
+from highway_env import vehicle
 
 from highway_env.envs.common.abstract import AbstractEnv
 from highway_env.envs.common.observation import MultiAgentObservation
@@ -19,6 +20,7 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
 
     Credits to Munir Jojo-Verge for the idea and initial implementation.
     """
+
 #"observation": {
             #    "type": "KinematicsGoal",
             #    "features": ['x', 'y', 'vx', 'vy', 'cos_h', 'sin_h'],
@@ -29,17 +31,17 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
     def default_config(cls) -> dict:
         config = super().default_config()
         config.update({
-            "observation" : {"type": "ParkingDistanceObservation"},
+            "observation" : {"type": "ParkingDistanceObservation"},#myGoalObseravations
             "action": {
                 "type": "DiscreteAction"
             },
-            "reward_weights": [1, 0.3, 0, 0, 0.02, 0.02],
-            "success_goal_reward": 0.12,
+            "reward_weights": [0.1, 0.1, 0.1, 0.1],#[1, 0.3, 0, 0, 0.02, 0.02],
+            "success_goal_reward": 5000,
             "collision_reward": -5,
             "steering_range": np.deg2rad(30),
             "simulation_frequency": 15,
             "policy_frequency": 5,
-            "duration": 1500,#MAX STEPS
+            "duration": 1000,#MAX STEPS
             "screen_width": 640, #640 x 480 same as output of the prepeocessed image (can be adjusted in the preprocess function)
             "screen_height": 480,
             "centering_position": [0.5, 0.5],
@@ -103,28 +105,108 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
             #self.road.vehicles.append(vehicle2)
             self.controlled_vehicles.append(vehicle)
 
-        lane = self.np_random.choice(self.road.network.lanes_list())
-        self.goal = Landmark(self.road, lane.position(lane.length/2 + 40, 0), heading=lane.heading)
+        lane = self.road.network.get_lane(['a','b',0]) #self.np_random.choice(self.road.network.lanes_list())
+        self.goal = Landmark(self.road, lane.position(lane.length/2 , 0), heading=lane.heading)#+40
         self.road.objects.append(self.goal)
 
-    def compute_reward(self, obs: np.ndarray) -> float:
-        if self.steps >= self.config["duration"]:   return -2000
-        elif ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30)):   return 100
-        elif ((obs[0] < 50) & (obs[1] < 50) & (obs[2] < 50) & (obs[3] < 50)):   return 5000
-        elif ((obs[0] < 100) & (obs[1] < 100) & (obs[2] < 100) & (obs[3] < 100)):   return 2000
-        elif ((obs[0] < 150) & (obs[1] < 150) & (obs[2] < 150) & (obs[3] < 150)):   return 1000
-        elif ((obs[0] < 200) & (obs[1] < 200) & (obs[2] < 200) & (obs[3] < 200)):   return 500
-        elif ((obs[0] < 250) & (obs[1] < 250) & (obs[2] < 250) & (obs[3] < 250)):   return 250
-        elif any(vehicle.crashed for vehicle in self.controlled_vehicles):  return -2000
-        else: return -1
+    def compute_reward(self, obs: np.ndarray) -> float:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5
+        #thinking outside the box/ using heading to make things easier
+        Ra = -np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90) 
+        Rx = -np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+        Rd = -np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
+
+        if self.controlled_vehicles[0].crashed: return -1000
+        elif self._is_success(obs): return 5000
+
+        if (np.rad2deg(self.controlled_vehicles[0].heading) > -110) & (np.rad2deg(self.controlled_vehicles[0].heading) < -80):
+            if np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 10:
+                return (Rd+Ra+Rx)/1000
+            else:
+                return (Ra+Rx)/1000
+        else:
+            return (Ra)/1000
+
+        #self.controlled_vehicles[0].position = self.goal.position + offset 
+        
+        #if self.controlled_vehicles[0].crashed: return -2500
+        #elif self._is_success(obs): return 10000
+#
+        ##Rd = -np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
+        #Ra = -np.abs(np.rad2deg(self.controlled_vehicles[0].heading) - 90)
+#
+        ##if (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) > 10) & (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 20):
+        ##    Rad = Ra/1000
+        ##else: Rad = Rd/1000
+#
+        #return Ra/1000
+        #if self.controlled_vehicles[0].crashed2: return Rad-1
+        #else: return Rad
+        
+        #Trying paper rewards R = Rd + Ra
+        
+        #if self.controlled_vehicles[0].crashed: return -15000
+        #elif self._is_success(obs): return 10000
+#
+        #Rd = -np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) #0.5*(0.5*(obs[0]+obs[1]) + 0.5*(obs[2]+obs[3])) - 
+        #Ra = -np.abs(obs[2] - obs[3])
+#
+        #if (all(obs[2:] < 200)):
+        #    Rad = (min(Ra,Rd) + 0.5*max(Ra,Rd) + Ra)/1000
+        #else: Rad = (Ra + Rd)/1000
+#
+        #if self.controlled_vehicles[0].crashed2: return Rad-1
+        #else: return Rad
+
+        #if ((obs[2]<150) &  (obs[3])<150):
+        
+
+        #if any(vehicle.crashed for vehicle in self.controlled_vehicles): return -2000 #crash
+        #
+        #elif self._is_success(obs): return 5000 #goal 
+        #
+        #elif (all(obs<30) and all(not(vehicle.crashed2) for vehicle in self.controlled_vehicles)): 
+        #    return (-(20+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+1500)
+        #
+        #elif (all(obs<50) and all(not(vehicle.crashed2) for vehicle in self.controlled_vehicles)):
+        #    return (-(20+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+1000)
+        #
+        #elif any(vehicle.crashed2 for vehicle in self.controlled_vehicles):
+        #    for vehicle in self.controlled_vehicles:
+        #        if all(obs<20):
+        #            return (-(10+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+50)
+        #        elif all(obs<30):
+        #            return (-(10+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+25)
+        #        elif all(obs<40):
+        #            return (-(10+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+15)
+        #        #elif all(obs<50):
+        #        #    return (-(20+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10)+10)
+        #        else: return -(10+np.linalg.norm(vehicle.position[0:2] - self.goal.position)/10) #crash
+        #else:
+        #    for vehicle in self.controlled_vehicles:
+        #        return -np.linalg.norm(vehicle.position[0:2] - self.goal.position)/500
+
+
+
+        #if any(vehicle.crashed for vehicle in self.controlled_vehicles): return -10000 #crash
+        #else: return -np.power(np.dot(np.abs(achieved_goal - desired_goal), np.array(self.config["reward_weights"])), p)
+        #else: return -obs[3]/10000
+        #return -np.average(np.abs(obs-[20,20,20,20]))/10000 #
+        #if ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30)):   return 1500 #goal state 
+        #elif any(vehicle.crashed for vehicle in self.controlled_vehicles):  return -1500 #crash
+        #else: return -1
+        
 
     def _reward(self, action: np.ndarray) -> float:
         obs = self.observation_type.observe()
-        #obs = obs if isinstance(obs, tuple) else (obs,)
         return self.compute_reward(obs)
+        #obs = obs if isinstance(obs, tuple) else (obs,)
+        #return sum(self.compute_reward(agent_obs['achieved_goal'], agent_obs['desired_goal'], {})
+        #             for agent_obs in obs)
+        #obs = self.observation_type.observe()
+        
 
-    def _is_success(self, obs) -> bool:
-        return ((obs[0] < 30) & (obs[1] < 30) & (obs[2] < 30) & (obs[3] < 30))
+    def _is_success(self, obs) -> bool:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray
+        return np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 1 #all(obs<20)#all(achieved_goal<=desired_goal)
 
     def _is_terminal(self) -> bool:
         #The episode is over if the ego vehicle crashed or the goal is reached.
@@ -132,7 +214,7 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         crashed = any(vehicle.crashed for vehicle in self.controlled_vehicles)
         obs = self.observation_type.observe()
         #obs = obs if isinstance(obs, tuple) else (obs,)
-        success = self._is_success(obs)
+        success = self._is_success(obs) #self._is_success()obs['achieved_goal'], obs['desired_goal']
         return bool(time or crashed or success)
 
 #    def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5) -> float:

@@ -607,7 +607,7 @@ class ParkingDistanceObservation(ObservationType):
         super().__init__(env)
         
     def space(self) -> spaces.Space:
-        return spaces.Box(shape=(4,), low=0, high=800, dtype=np.float32)
+        return spaces.Box(shape=(4,), low=0, high=400, dtype=np.float32)
 
     def observe(self) -> np.ndarray:
         obs = np.ndarray(shape=self.space().shape)
@@ -635,16 +635,13 @@ class myGoalObseravations(ObservationType):
         super().__init__(env)
 
     def space(self) -> spaces.Space:
-        try:
-            obs = self.observe()
-            return spaces.Dict(dict(
-                desired_goal=spaces.Box(0, 800, shape=(1,), dtype=np.float),
-                achieved_goal=spaces.Box(0, 800, shape=(1,), dtype=np.float),
-                observation=spaces.Box(0, 800, shape=(1,), dtype=np.float),
-            ))
-        except AttributeError:
-            return spaces.Space()
-
+        #obs = self.observe()
+        return spaces.Dict(dict(
+            desired_goal=spaces.Box(0, 800.0, shape = (4,), dtype=np.float32),
+            achieved_goal=spaces.Box(0, 800.0, shape = (4,), dtype=np.float32),
+            observation=spaces.Box(0, 800.0, shape = (4,), dtype=np.float32),
+        ))
+        
     def observe(self) -> Dict[str, np.ndarray]:
         state = np.ndarray(4,)
         left_lane = self.observer_vehicle.Obstacles[4]
@@ -661,13 +658,13 @@ class myGoalObseravations(ObservationType):
         state[2] = np.linalg.norm(polygon[2] - bottom_left_point)
         state[3] = np.linalg.norm(polygon[3] - bottom_right_point)
 
-        new_state = np.array([np.sum(np.abs(state))/4])
+        #new_state = np.array([np.sum(np.abs(state))/4])
 
-        goal = np.array([20])
+        goal = np.array([20.0 , 20.0 , 20.0 , 20.0])
 
         obs = {
-            "observation": new_state,
-            "achieved_goal": new_state,
+            "observation": state,
+            "achieved_goal": state,
             "desired_goal": goal
         }
     
@@ -711,6 +708,4 @@ def observation_factory(env: 'AbstractEnv', config: dict) -> ObservationType:
     #       |        -    |
     #       |_____________|
     #
-    #
-    #
-    #
+   

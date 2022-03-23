@@ -155,7 +155,7 @@ class DiscreteAction(ActionType):#ContinuousAction
         :param lateral: include lateral actions
         """
         angle = np.deg2rad([-30, -20, -10, 0 , 10, 20, 30])
-        speed = [-20, -10, 0, 10, 20]
+        speed = [-10, 0, 10]#[-20, -10, 0, 10, 20]
         self.all_actions = list(product(angle, speed))
 
         super().__init__(env)
@@ -174,7 +174,7 @@ class DiscreteAction(ActionType):#ContinuousAction
     #    #self.actions_per_axis = actions_per_axis
 
     def space(self) -> spaces.Discrete:
-        return spaces.Discrete(35)
+        return spaces.Discrete(21)#(35)
 
     @property
     def vehicle_class(self) -> Callable:

@@ -1,4 +1,3 @@
-from math import gamma
 import gym
 import random
 from sqlalchemy import false
@@ -22,39 +21,45 @@ import gym
 
 from stable_baselines3 import PPO
 from stable_baselines3 import A2C
+from stable_baselines3 import DQN
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.env_checker import check_env
 
 env_name = "costume-parking-v0"
 env = gym.make(env_name)
 
+"""PPO_carDistance_noLineCrash - First succesfull model
+PPO_carDistance_LineCrash - getting away from parking
+PPO_carDistance_LinePenalty - started good but converged to not move
+PPO_carDistance_LinePenalty2 - good baseline with episode = 1000, 100k training
+"""
+
 log_path = os.path.join("training", "logs")
-model_name = "A2C_low2_gamma"
+model_name = "PPO_paper_rewards_hierarchical_rewards" 
 model_path = os.path.join("training", "saved_models", model_name)
 
 #print(check_env(env))
 
-#model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=log_path, gamma = 0.05)
-#model.learn(total_timesteps=20000)
-#model.save(model_path)
+model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
+TIMESTEPS = 10000
 
-#del model # remove to demonstrate saving and loading
+for i in range(1, 30):
+    model.learn(total_timesteps= TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
+    model.save(f"{model_path}/{TIMESTEPS*i}") 
 
-#model = A2C.load(model_path, env=env)
-
-#model.learn(total_timesteps=30000)
-
+#model = PPO.load(f"{model_path}/290000", env=env)
+#model.learn(total_timesteps=100000, reset_num_timesteps=False, log_interval=log_path)
 #model.save(model_path)
 
 done = False
 obs = env.reset()
 
 while not done:
-    #action, _states = model.predict(obs)
-    action = 19
+    action, _states = model.predict(obs)
+    #action = 14
     obs, rewards, done, info = env.step(action)
     env.render()
-    print(info)
+    print(info, rewards)
 
 #for i in range(20): 
 #    env.step(19)

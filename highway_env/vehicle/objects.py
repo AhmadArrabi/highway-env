@@ -47,6 +47,7 @@ class RoadObject(ABC):
         self.check_collisions = True
 
         self.crashed = False
+        self.crashed2 = False
         self.hit = False
         self.impact = np.zeros(self.position.shape)
 
@@ -108,8 +109,19 @@ class RoadObject(ABC):
         """
         if not (self.collidable):
             return
-        intersecting, will_intersect, transition = self._is_line_colliding(dt)#other
-        if intersecting:
+            
+        line_intersecting, will_intersect, transition = self._is_line_colliding(dt)#other
+        boarder_intersecting, will_intersect, transition = self._is_boarder_colliding(dt)#other
+
+        if line_intersecting:
+            if self.solid:
+                self.crashed = True
+                self.crashed2 = True #Uncomment if you want to give penalty for line collisions not a crash
+            if not self.solid:
+                self.hit = True
+        else: self.crashed2 = False #Uncomment if you want to give penalty for line collisions not a crash
+
+        if boarder_intersecting:
             if self.solid:
                 self.crashed = True
             if not self.solid:
@@ -226,8 +238,18 @@ class RoadObject(ABC):
                 points7,
                 points8]   
     
+    #check collision with yellow lines 
     def _is_line_colliding(self,dt):#other
-        for obstacle in self.Obstacles:
+        for obstacle in self.Obstacles[4:]:
+            poly = np.vstack([obstacle, obstacle[0:1]])
+            intersecting, will_intersect, transition = utils.are_polygons_intersecting(self.polygon(), poly, self.velocity * dt, 0)
+            if intersecting:
+                break
+        return intersecting, will_intersect, transition
+
+    #check collision with borders
+    def _is_boarder_colliding(self,dt):#other
+        for obstacle in self.Obstacles[:4]:
             poly = np.vstack([obstacle, obstacle[0:1]])
             intersecting, will_intersect, transition = utils.are_polygons_intersecting(self.polygon(), poly, self.velocity * dt, 0)
             if intersecting:
