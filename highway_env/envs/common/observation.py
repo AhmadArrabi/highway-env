@@ -607,12 +607,32 @@ class ParkingDistanceObservation(ObservationType):
         super().__init__(env)
         
     def space(self) -> spaces.Space:
-        return spaces.Box(shape=(4,), low=0, high=400, dtype=np.float32)
+        self.distance_observation_space = spaces.Box(shape=(4,), low=0, high=400, dtype=np.float32)
+        self.heading_observation_space = spaces.Box(shape=(1,), low=-180, high=180, dtype=np.float32)
+        self.position_observation_space = spaces.Box(shape=(2,), low=-500, high=300, dtype=np.float32)
+        self.observation_space = spaces.Dict({ 
+            "Distances": self.distance_observation_space, 
+            "Heading": self.heading_observation_space, 
+            "Position": self.position_observation_space
+        }) 
+        return self.observation_space
+        #return spaces.Box(shape=(4,), low=0, high=800, dtype=np.float32)
 
     def observe(self) -> np.ndarray:
-        obs = np.ndarray(shape=self.space().shape)
+        obs = np.ndarray(shape=(4,))#self.space().shape
+
+        #bottom left parking
         left_lane = self.observer_vehicle.Obstacles[4]
         right_lane = self.observer_vehicle.Obstacles[5]
+
+        #second bottom left parking
+        #left_lane = self.observer_vehicle.Obstacles[5]
+        #right_lane = self.observer_vehicle.Obstacles[6]
+
+        #top left parking
+        #left_lane = self.observer_vehicle.Obstacles[8]
+        #right_lane = self.observer_vehicle.Obstacles[9]
+
         bottom_left_point = left_lane[3]
         top_left_point = left_lane[2]
         top_right_point = right_lane[1]
@@ -620,15 +640,53 @@ class ParkingDistanceObservation(ObservationType):
 
         polygon = self.observer_vehicle.polygon()
 
-        #print("\nTR", top_right_point, "\nBR", bottom_right_point, "\nBL", bottom_left_point, "\nTL", top_left_point)
-        #print("\nPolygon", polygon)
-
         obs[0] = np.linalg.norm(polygon[0] - top_right_point)
         obs[1] = np.linalg.norm(polygon[1] - top_left_point)
         obs[2] = np.linalg.norm(polygon[2] - bottom_left_point)
         obs[3] = np.linalg.norm(polygon[3] - bottom_right_point)
+        
+        obs2 = np.ndarray(shape=(1,))
+        #obs2[0] = -np.rad2deg(self.observer_vehicle.heading) #top
+        obs2[0] = np.rad2deg(self.observer_vehicle.heading) #bottom
 
-        return obs
+        obs3 = np.ndarray(shape=(2,))
+        #obs3[0] = self.observer_vehicle.position[0]-150 #second bottom left parking
+        obs3[0] = self.observer_vehicle.position[0] #bottom left parking
+        obs3[1] = self.observer_vehicle.position[1]
+
+        my_observation = {
+            "Distances": obs,
+            "Heading": obs2,
+            "Position": obs3
+        }
+
+        return my_observation
+        #obs = np.ndarray(shape=self.space().shape)
+        #left_lane = self.observer_vehicle.Obstacles[4]
+        #right_lane = self.observer_vehicle.Obstacles[5]
+        #bottom_left_point = left_lane[3]
+        #top_left_point = left_lane[2]
+        #top_right_point = right_lane[1]
+        #bottom_right_point = right_lane[0]
+#
+        #polygon = self.observer_vehicle.polygon()
+#
+        ##print("\nTR", top_right_point, "\nBR", bottom_right_point, "\nBL", bottom_left_point, "\nTL", top_left_point)
+        ##print("\nPolygon", polygon)
+#
+        ##front parking
+        #obs[0] = np.linalg.norm(polygon[0] - top_right_point)
+        #obs[1] = np.linalg.norm(polygon[1] - top_left_point)
+        #obs[2] = np.linalg.norm(polygon[2] - bottom_left_point)
+        #obs[3] = np.linalg.norm(polygon[3] - bottom_right_point)
+#
+        ##reverse parking
+        ##obs[0] = np.linalg.norm(polygon[0] - bottom_left_point)
+        ##obs[1] = np.linalg.norm(polygon[1] - bottom_right_point)
+        ##obs[2] = np.linalg.norm(polygon[2] - top_right_point)
+        ##obs[3] = np.linalg.norm(polygon[3] - top_left_point)
+#
+        #return obs
 
 class myGoalObseravations(ObservationType):
     def __init__(self, env: 'AbstractEnv'):

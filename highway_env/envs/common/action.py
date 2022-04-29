@@ -72,7 +72,7 @@ class ContinuousAction(ActionType):
     ACCELERATION_RANGE = (-5, 5.0)
     """Acceleration range: [-x, x], in m/s²."""
 
-    STEERING_RANGE = (-np.pi / 4, np.pi / 4)
+    STEERING_RANGE = (-np.pi / 6, np.pi / 6)
     """Steering angle range: [-x, x], in rad."""
 
     def __init__(self,
@@ -142,6 +142,26 @@ class ContinuousAction(ActionType):
     #        })
     #    self.last_action = action
 
+class MyContinuousAction(ActionType):#ContinuousAction
+    def __init__(self,
+        env: 'AbstractEnv',
+        **kwargs) -> None:
+
+        super().__init__(env)
+
+    def space(self) -> spaces.Discrete:
+        return spaces.Box(-30., 30., shape=(2,), dtype=np.float32)
+    
+    @property
+    def vehicle_class(self) -> Callable:
+        return Vehicle 
+
+    def act(self, action: np.ndarray) -> None:
+        self.controlled_vehicle.act({
+                "speed": action[0],
+                "steering": np.deg2rad(action[1])
+            })
+        self.last_action = action
 
 class DiscreteAction(ActionType):#ContinuousAction
     def __init__(self,
@@ -305,6 +325,8 @@ def action_factory(env: 'AbstractEnv', config: dict) -> ActionType:
         return ContinuousAction(env, **config)
     if config["type"] == "DiscreteAction":
         return DiscreteAction(env, **config)
+    elif config["type"] == "myContinuousAction":
+        return MyContinuousAction(env, **config)
     elif config["type"] == "DiscreteMetaAction":
         return DiscreteMetaAction(env, **config)
     elif config["type"] == "MultiAgentAction":

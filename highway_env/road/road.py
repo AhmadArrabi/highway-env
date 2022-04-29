@@ -306,12 +306,13 @@ class Road(object):
 
         :param dt: timestep [s]
         """
+
         for vehicle in self.vehicles:
             vehicle.step(dt)
         for i, vehicle in enumerate(self.vehicles):
             vehicle.handle_line_collisions(dt)
             #for other in self.vehicles[i+1:]:
-                #vehicle.handle_line_collisions(dt)
+            #    vehicle.handle_collisions(other, dt)
             #for other in self.objects:
             #    vehicle.handle_collisions(other, dt)
             #for other in self.lines:

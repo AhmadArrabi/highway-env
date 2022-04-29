@@ -22,7 +22,7 @@ class Vehicle(RoadObject):
 
     LENGTH = 107.0
     """ Vehicle length [m] """
-    WIDTH = 85.0
+    WIDTH = 80.0
     """ Vehicle width [m] """
     DEFAULT_SPEEDS = [23, 25]
     """ Range for random initial speeds [m/s] """
@@ -128,11 +128,11 @@ class Vehicle(RoadObject):
             self.crashed = True
             self.impact = None
         self.heading += self.speed * np.sin(beta) / (self.LENGTH / 2) * dt
-        self.speed = self.action['speed'] #self.action['acceleration'] * dt
+        self.speed = self.action['speed'] #self.action['acceleration'] * dt #############################################33
         self.on_state_update()
 
     def clip_actions(self) -> None:
-        if self.crashed:
+        if self.crashed:#############################################33
             self.action['steering'] = 0
             self.action['speed'] = 0
         self.action['steering'] = float(self.action['steering'])
@@ -141,16 +141,15 @@ class Vehicle(RoadObject):
         #    self.action['acceleration'] = min(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
         #elif self.speed < -self.MAX_SPEED:
         #    self.action['acceleration'] = max(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
-
-#        if self.crashed:
-#            self.action['steering'] = 0
-#            self.action['acceleration'] = -1.0*self.speed
-#        self.action['steering'] = float(self.action['steering'])
-#        self.action['acceleration'] = float(self.action['acceleration'])
-#        if self.speed > self.MAX_SPEED:
-#            self.action['acceleration'] = min(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
-#        elif self.speed < -self.MAX_SPEED:
-#            self.action['acceleration'] = max(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
+        #if self.crashed:
+        #    self.action['steering'] = 0
+        #    self.action['acceleration'] = -1.0*self.speed
+        #self.action['steering'] = float(self.action['steering'])
+        #self.action['acceleration'] = float(self.action['acceleration'])
+        #if self.speed > self.MAX_SPEED:
+        #    self.action['acceleration'] = min(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
+        #elif self.speed < -self.MAX_SPEED:
+        #    self.action['acceleration'] = max(self.action['acceleration'], 1.0 * (self.MAX_SPEED - self.speed))
 
     def on_state_update(self) -> None:
         if self.road:

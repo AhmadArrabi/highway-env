@@ -72,6 +72,12 @@ class AbstractEnv(gym.Env):
         self.rendering_mode = 'human'
         self.enable_auto_render = False
 
+        #X axis flag
+        self.reached_150_x = False
+
+        #getting closer to goal flag
+        self.goal_flag = False
+
         self.reset()
 
     @property
@@ -233,7 +239,7 @@ class AbstractEnv(gym.Env):
 
     def _simulate(self, action: Optional[Action] = None) -> None:
         """Perform several steps of simulation with constant action."""
-        frames = int(self.config["simulation_frequency"] // self.config["policy_frequency"])
+        frames = 50 #int(self.config["simulation_frequency"] // self.config["policy_frequency"])
         for frame in range(frames):
             # Forward action to the vehicle
             if action is not None \

@@ -3,6 +3,7 @@
 from gym.envs.registration import register
 from gym import GoalEnv
 import numpy as np
+from torch import float32
 from highway_env import vehicle
 
 from highway_env.envs.common.abstract import AbstractEnv
@@ -33,7 +34,7 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         config.update({
             "observation" : {"type": "ParkingDistanceObservation"},#myGoalObseravations
             "action": {
-                "type": "DiscreteAction"
+                "type": "DiscreteAction" #myContinuousAction
             },
             "reward_weights": [0.1, 0.1, 0.1, 0.1],#[1, 0.3, 0, 0, 0.02, 0.02],
             "success_goal_reward": 5000,
@@ -60,8 +61,15 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         return info
 
     def _reset(self):
+        self.reached_150_x = False
+        self.goal_flag = False
+        self.right_flag = False
+        self.moving_flag_1 = False
         self._create_road()
         self._create_vehicles()
+        self.Rd = np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
+        self.D_right_init = np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-70, -40])
+        self.D_old = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
 
     def _create_road(self, spots: int = 3) -> None:
         """
@@ -98,34 +106,267 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         """Create some new random vehicles of a given type, and add them on the road."""
         self.controlled_vehicles = []
         for i in range(self.config["controlled_vehicles"]):
-            vehicle = self.action_type.vehicle_class(self.road, [-300, 50], 0, 0)#i*202*np.pi*self.np_random.rand() -300,50
+            #vehicle = self.action_type.vehicle_class(self.road, [np.random.uniform(low=-140, high=-180), np.random.uniform(low=-20, high=0)], np.deg2rad(np.random.uniform(low=-100, high=-80)), 0) #TOO RANDOM
+            #vehicle = self.action_type.vehicle_class(self.road, [-300, 50], 0, 0)#INITIAL PARKING [-300, 50]
+            vehicle = self.action_type.vehicle_class(self.road, [-50, -40], np.deg2rad(np.random.uniform(low=-35, high=-46)), 0) #TASK2
+            #vehicle = self.action_type.vehicle_class(self.road, [np.random.uniform(low=-170, high=-160), -5], np.deg2rad(np.random.uniform(low=-94, high=-86)), 0) #TASK 3
             self.road.vehicles.append(vehicle)
             #To add vehicles/ maybe occupied unocupied parkings
-            #vehicle2 = self.action_type.vehicle_class(self.road, [i*5, 0], 2*np.pi*self.np_random.rand(), 0)
+            #vehicle2 = self.action_type.vehicle_class(self.road, [-162, -175], np.deg2rad(-90), 0)
             #self.road.vehicles.append(vehicle2)
+            #vehicle3 = self.action_type.vehicle_class(self.road, [-52, -175], np.deg2rad(-90), 0)
+            #self.road.vehicles.append(vehicle3)
+            #vehicle4 = self.action_type.vehicle_class(self.road, [58, -175], np.deg2rad(-90), 0)
+            #self.road.vehicles.append(vehicle4)
+            #vehicle5 = self.action_type.vehicle_class(self.road, [-52, 175], np.deg2rad(-90), 0)
+            #self.road.vehicles.append(vehicle5)
+            #vehicle6 = self.action_type.vehicle_class(self.road, [58, 175], np.deg2rad(-90), 0)
+            #self.road.vehicles.append(vehicle6)
             self.controlled_vehicles.append(vehicle)
 
         lane = self.road.network.get_lane(['a','b',0]) #self.np_random.choice(self.road.network.lanes_list())
         self.goal = Landmark(self.road, lane.position(lane.length/2 , 0), heading=lane.heading)#+40
         self.road.objects.append(self.goal)
 
+    def compute_distance_from_goal(self):
+        self.Rd_new = np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position))
+
+        if self.Rd_new < self.Rd:
+            self.goal_flag = True
+        else: self.goal_flag = False
+
+        self.Rd = self.Rd_new
+
+    def is_moving(self):
+        self.D_right = np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-70.0, -40.0]))
+
+        if self.D_right < self.D_right_init:
+            self.right_flag = True
+        else: self.right_flag = False
+
+        self.D_right_init = self.D_right
+
+    def is_moving_2(self):
+        self.D_new = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+
+        if self.D_new < self.D_old:
+            self.moving_flag_1 = True
+        else: self.moving_flag_1 = False
+
+        self.D_old = self.D_new
+
     def compute_reward(self, obs: np.ndarray) -> float:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5
-        #thinking outside the box/ using heading to make things easier
-        Ra = -np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90) 
-        Rx = -np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
-        Rd = -np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
+        #Task 3----------------------------------KEEP-------------------------------------------------------
+        #Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90.0)
+        #Rx = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+        #Rd = np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position))
+        #    
+        #if self.controlled_vehicles[0].crashed: return -50.0
+        #elif self._is_success(obs): return 500.0
+#
+        #self.compute_distance_from_goal()
+#
+        #if self.goal_flag:
+        #    return 1/((Ra + Rx + 1.01*Rd)/1000.0)
+        #else:
+        #    return -5
+  #
+        #TASK 2-----------------------------KEEP----------------------------------------------
+        Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90.0)
+        Rx = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+        
+        best_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -87) & \
+            (np.rad2deg(self.controlled_vehicles[0].heading) > -93) & \
+                (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 3.0)
+            
+        if self.controlled_vehicles[0].crashed: return -2500.0
+        elif self._is_success(obs): return 5000.0
 
-        if self.controlled_vehicles[0].crashed: return -1000
-        elif self._is_success(obs): return 5000
+        self.is_moving_2()
 
-        if (np.rad2deg(self.controlled_vehicles[0].heading) > -110) & (np.rad2deg(self.controlled_vehicles[0].heading) < -80):
-            if np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 10:
-                return (Rd+Ra+Rx)/1000
-            else:
-                return (Ra+Rx)/1000
+        if best_position:
+            return 1/((Ra+Rx)/100.0) + 25.0
+        elif self.moving_flag_1:
+            return 1/((Ra+Rx)/100.0)      #((Ra+Rx)/100)
         else:
-            return (Ra)/1000
+            return -1
+    
+        #Task 1----------------------------------KEEP-------------------------------------------------------
+        #Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 45.0)
+        #Rx = np.abs(self.controlled_vehicles[0].position[0] + 70.0)
+        #
+        #best_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -40) & \
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) > -50) & \
+        #        (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-70.0, -40.0]) < 5.0)
+        #    
+        #if self.controlled_vehicles[0].crashed: return -2500.0
+        #elif self._is_success(obs): return 5000.0
+#
+        #self.is_moving()
+#
+        #if best_position:
+        #    return 1/((1.01*Ra+Rx)/100.0) + 50.0
+        #elif self.right_flag:
+        #    return 1/((1.01*Ra+Rx)/100.0)      #((Ra+Rx)/100)
+        #else:
+        #    return -1
+        #--------------------------------------KEEP-------------------------------------------------------
+        """
+        #new amjed idea ... only get rewards if i get closer
+        Ra = -np.float32(np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90))
+        Rx = -np.float32(np.abs(self.controlled_vehicles[0].position[0] - (self.goal.position[0]+150)))
+        Rx_goal = np.float32(np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]))
+        Rd = -np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position))
 
+        nice_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -80) & \
+            (np.rad2deg(self.controlled_vehicles[0].heading) > -100) & \
+                (Rx_goal <= 10)
+
+        best_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -85) & \
+            (np.rad2deg(self.controlled_vehicles[0].heading) > -95) & \
+                (Rx_goal <= 5)
+
+        if (self.controlled_vehicles[0].position[0] > (self.goal.position[0]+100)) & \
+            (self.controlled_vehicles[0].position[0] < (self.goal.position[0]+160)) &\
+                (~self.reached_150_x) &\
+                    (np.rad2deg(self.controlled_vehicles[0].heading) < -30) &\
+                        (np.rad2deg(self.controlled_vehicles[0].heading) > -110):
+                        self.reached_150_x = True 
+            
+        if self.controlled_vehicles[0].crashed: return np.float32(-1800)
+        elif self._is_success(obs): return np.float32(5000)
+
+        self.compute_distance_from_goal() #calculate new distance and set flag
+
+        if nice_position & self.goal_flag:
+            return ((Ra+3*Rd-Rx_goal)/100)+10 #np.exp(-((Ra+3*Rd-Rx_goal)/100))+10
+        #elif nice_position & ~self.goal_flag:
+        #    return ((Ra+3*Rd-Rx_goal)/100)-8
+
+        if best_position & self.goal_flag:
+            return ((Ra+3*Rd-Rx_goal)/100)+20 #np.exp(-((Ra+3*Rd-Rx_goal)/100))+20
+        #elif best_position & ~self.goal_flag:
+        #    return ((Ra+3*Rd-Rx_goal)/100)-15
+
+        if self.controlled_vehicles[0].crashed2:
+            if self.reached_150_x:
+                if (self.Rd < 100) & (self.goal_flag):
+                    return ((Ra/100)+1.5)-10
+                else:
+                    if self.goal_flag: 
+                        return ((Ra/100)+1)-10
+                    else: return ((Ra/100)-1)-10
+            else:
+                return ((Ra+Rx)/100)-10
+        else:
+            if self.reached_150_x:
+                if (self.Rd < 100) & (self.goal_flag):
+                    return ((Ra-Rx_goal)/100)+10
+                elif (self.Rd < 100) & (~self.goal_flag):
+                    return ((Ra-Rx_goal)/100)-8
+                elif (self.Rd < 150) & (self.goal_flag):
+                    return ((Ra-Rx_goal)/100)+7
+                elif (self.Rd < 150) & (~self.goal_flag):
+                    return ((Ra-Rx_goal)/100)-6
+                elif (self.Rd < 200) & (self.goal_flag):
+                    return ((Ra-Rx_goal)/100)+5
+                elif (self.Rd < 200) & (~self.goal_flag):
+                    return ((Ra-Rx_goal)/100)-4
+                elif (self.Rd < 250) & (self.goal_flag):
+                    return ((Ra-Rx_goal)/100)+3
+                elif (self.Rd < 250) & (~self.goal_flag):
+                    return ((Ra-Rx_goal)/100)-2
+                else:
+                    if self.goal_flag: 
+                        return ((Ra-Rx_goal)/100)+1
+                    elif self.Rd > 300:
+                        return ((Ra-Rx_goal)/100)-3
+                    else: return ((Ra-Rx_goal)/100)-1
+"""
+        ###################################################################################################
+        #we now just want to reverse
+        #Ra = np.float32(np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90))
+        #Rx_goal = np.float32(np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]))
+        #Rd = np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position))
+#
+        #if self.controlled_vehicles[0].crashed: return np.float32(-5000)
+        #elif self._is_success(obs): return np.float32(5000)
+#
+        #self.compute_distance_from_goal()
+#
+        #if self.controlled_vehicles[0].crashed2:
+        #    if self.goal_flag:
+        #        return (1/((Ra + Rx_goal + Rd)/300))-5
+        #    else: return (1/((Ra + Rx_goal + Rd)/300))-10
+        #else:
+        #    if self.goal_flag:
+        #        return (1/((Ra + Rx_goal + Rd)/300))+1
+        #    else: return (1/((Ra + Rx_goal + Rd)/300))-1
+#
+       ######################################################################################
+            #elif (np.abs(Rx_goal) < 10) &\
+            #    (np.rad2deg(self.controlled_vehicles[0].heading) < -75) & \
+            #        (np.rad2deg(self.controlled_vehicles[0].heading) > -105) & \
+            #            (self.goal_flag):
+            #        return ((Ra-Rx_goal+Rd)/100)+3
+            #elif (np.abs(Rx_goal) < 10) &\
+            #    (np.rad2deg(self.controlled_vehicles[0].heading) < -75) & \
+            #        (np.rad2deg(self.controlled_vehicles[0].heading) > -105) & \
+            #            (~self.goal_flag):
+            #        return ((Ra-Rx_goal+Rd)/100)-1
+            #else:
+            #    return (1.05*Ra+Rx)/100
+
+                #expo
+                #penalties
+                #Try 2 models
+
+        #new amjed idea ... only get rewards if i get closer
+        #Ra = -np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90) 
+        #Rx = -np.abs(self.controlled_vehicles[0].position[0] - (self.goal.position[0]+150))
+        #Rx_goal = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+        #
+        #if (self.controlled_vehicles[0].position[0] > (self.goal.position[0]+100)) & \
+        # (self.controlled_vehicles[0].position[0] < (self.goal.position[0]+160)):
+        #    self.reached_150_x = True
+#
+        #if self.controlled_vehicles[0].crashed: return -1800
+        #elif self._is_success(obs): return 5000
+#
+        #self.compute_distance_from_goal() #calculate new distance and set flag
+#
+        #if self.reached_150_x:
+        #    if self.Rd < 100:
+        #        if self.goal_flag: 
+        #            return (Ra/100)+1.5
+        #    else:
+        #        if self.goal_flag: 
+        #            return (Ra/100)+1
+        #        else: return (Ra/100)-1
+        #else:
+        #    return (Ra+Rx)/100
+            
+        #thinking outside the box/ using heading to make things easier
+        #Ra = -np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90) 
+        #Rx = -np.abs(self.controlled_vehicles[0].position[0] - (self.goal.position[0]+150))
+        #Rx_goal = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+        #Rd = -np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
+#
+        #if (self.controlled_vehicles[0].position[0] > (self.goal.position[0]+100)) & \
+        # (self.controlled_vehicles[0].position[0] < (self.goal.position[0]+160)):
+        #    self.reached_150_x = True
+#
+        #if self.controlled_vehicles[0].crashed: return -1800
+        #elif self._is_success(obs): return 5000
+#
+        #if self.reached_150_x:
+        #    if (np.rad2deg(self.controlled_vehicles[0].heading) > -110) & (np.rad2deg(self.controlled_vehicles[0].heading) < -70) & (Rx_goal < 10):
+        #        return 6+((Rd+Ra)/100)
+        #    else:
+        #        return 4+(Rd+Ra)/100
+        #else:
+        #    return (Ra+Rx)/100
+#----------------------------------------------------------------------------------------------------
         #self.controlled_vehicles[0].position = self.goal.position + offset 
         
         #if self.controlled_vehicles[0].crashed: return -2500
@@ -206,7 +447,22 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         
 
     def _is_success(self, obs) -> bool:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray
-        return np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 1 #all(obs<20)#all(achieved_goal<=desired_goal)
+        #TASK3
+        #return (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 20 ) &\
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -88) &\
+        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -92)
+
+        #TASK2
+        return (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 1) &\
+            (np.rad2deg(self.controlled_vehicles[0].heading) < -89) & \
+                (np.rad2deg(self.controlled_vehicles[0].heading) > -91) 
+        
+        #TASK1
+        #return (np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-70, -40]))) < 1 &\
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -44) & \
+        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -46) 
+                
+        #all(obs<20)#all(achieved_goal<=desired_goal)
 
     def _is_terminal(self) -> bool:
         #The episode is over if the ego vehicle crashed or the goal is reached.

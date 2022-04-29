@@ -1,6 +1,7 @@
 import gym
 import random
 from sqlalchemy import false
+import stable_baselines3
 import highway_env
 import matplotlib.pyplot as plt
 import matplotlib
@@ -22,6 +23,7 @@ import gym
 from stable_baselines3 import PPO
 from stable_baselines3 import A2C
 from stable_baselines3 import DQN
+from stable_baselines3 import DDPG
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.env_checker import check_env
 
@@ -35,49 +37,50 @@ PPO_carDistance_LinePenalty2 - good baseline with episode = 1000, 100k training
 """
 
 log_path = os.path.join("training", "logs")
-model_name = "PPO_paper_rewards_hierarchical_rewards" 
-model_path = os.path.join("training", "saved_models", model_name)
 
-#print(check_env(env))
+#model_name = "Task_1_100_freq" 
+#model_path = os.path.join("training", "saved_models", model_name)
 
-model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
-TIMESTEPS = 10000
+model_name_2 = "Task_2_50_freq" 
+model_path_2 = os.path.join("training", "saved_models", model_name_2)
 
-for i in range(1, 30):
-    model.learn(total_timesteps= TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO")
-    model.save(f"{model_path}/{TIMESTEPS*i}") 
+#model_name_3 = "Task_3_50_freq_2" 
+#model_path_3 = os.path.join("training", "saved_models", model_name_3)
 
-#model = PPO.load(f"{model_path}/290000", env=env)
-#model.learn(total_timesteps=100000, reset_num_timesteps=False, log_interval=log_path)
-#model.save(model_path)
+print(check_env(env))
+
+#model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log=log_path)#MlpPolicy
+model = PPO.load(f"{model_path_2}/Second_training_245000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+
+#Task_1 = PPO.load(f"{model_path}/195000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+#Task_2 = PPO.load(f"{model_path_2}/295000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+#Task_3 = PPO.load(f"{model_path_3}/145000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+
+TIMESTEPS = 5000
+
+#for i in range(1, 50):
+#    model.learn(total_timesteps= TIMESTEPS, reset_num_timesteps=False, tb_log_name="PPO_23")
+#    model.save(f"{model_path_2}/Second_training_{TIMESTEPS*i}") 
 
 done = False
 obs = env.reset()
+#action, _states = Task_1.predict(obs)
+#env.render()
 
 while not done:
+    #action = 9
     action, _states = model.predict(obs)
-    #action = 14
-    obs, rewards, done, info = env.step(action)
     env.render()
-    print(info, rewards)
+    obs, rewards, done, info = env.step(action)
 
-#for i in range(20): 
-#    env.step(19)
-#    env.render()
-#
-#count =0
-#done = False
-#while not done:
-#    count += 1
-#        #env.step(env.action_space.sample())  # with manual control, these actions are ignored
-#    x = env.render('rgb_array')
-#        #img = np.array(Image.fromarray(x))
-#        #preprocessed = preProcessing(img)
-#        #19 straight
-#        #15 backwards
-#        #24 speed 20 angle 10
-#        #23 speed 10 angle 10
-#    action = 24 #env.action_space.sample()
-#    obs, rewards, done, info = env.step(action)
-#    print(count, rewards, info)
-#
+    #if (np.abs(obs['Heading']) < 93) & (np.abs(obs['Heading']) > 87):
+    #    action, _states = Task_3.predict(obs)
+    #else: action, _states = model.predict(obs)
+    
+    #if (np.abs(obs['Heading']) < 92) & (np.abs(obs['Heading']) > 88):
+    #    action, _states = Task_3.predict(obs)
+    #elif (np.abs(obs['Heading']) > 30):
+    #    action, _states = Task_2.predict(obs)
+    #else: action, _states = Task_1.predict(obs)
+
+    print(info, rewards)

@@ -128,7 +128,7 @@ class RoadObject(ABC):
                 self.hit = True
 
     # rectangular check
-    x1, x2, y1, y2 = -225.0, -211, 240, 120
+    x1, x2, y1, y2 = -222.0, -214, 240, 120 #-225.0, -211, 240, 120
     x_offset = 110
 
     # screen boarders
@@ -162,58 +162,58 @@ class RoadObject(ABC):
 
     #top right polygon
     points8 = np.array([
-       [x1+x_offset*3  ,-y1],
-       [x1+x_offset*3  ,-y2],
-       [x2+x_offset*3  ,-y2],
-       [x2+x_offset*3  ,-y1]
+       [x1+x_offset*3-9  ,-y1],
+       [x1+x_offset*3-9  ,-y2+3],
+       [x2+x_offset*3-9  ,-y2+3],
+       [x2+x_offset*3-9  ,-y1]
     ])
 
     #second top right polygon
     points7 = np.array([
-       [x1+x_offset*2  ,-y1],
-       [x1+x_offset*2  ,-y2],
-       [x2+x_offset*2  ,-y2],
-       [x2+x_offset*2  ,-y1]
+       [x1+x_offset*2-6  ,-y1],
+       [x1+x_offset*2-6  ,-y2+3],
+       [x2+x_offset*2-6  ,-y2+3],
+       [x2+x_offset*2-6  ,-y1]
     ])
 
     #second top left polygon
     points6 = np.array([
-       [x1+x_offset  ,-y1],
-       [x1+x_offset  ,-y2],
-       [x2+x_offset  ,-y2],
-       [x2+x_offset  ,-y1]
+       [x1+x_offset-3  ,-y1],
+       [x1+x_offset-3  ,-y2+3],
+       [x2+x_offset-3  ,-y2+3],
+       [x2+x_offset-3  ,-y1]
     ])
 
     #top left lane polygon
     points5 = np.array([
        [x1  ,-y1],
-       [x1  ,-y2],
-       [x2  ,-y2],
+       [x1  ,-y2+3],
+       [x2  ,-y2+3],
        [x2  ,-y1]
     ])
 
     #bottom right lane polygon
     points4 = np.array([
-       [x1+x_offset*3  ,y1],
-       [x1+x_offset*3  ,y2],
-       [x2+x_offset*3  ,y2],
-       [x2+x_offset*3  ,y1]
+       [x1+x_offset*3-9  ,y1],
+       [x1+x_offset*3-9  ,y2],
+       [x2+x_offset*3-9  ,y2],
+       [x2+x_offset*3-9  ,y1]
     ])
 
     #second bottom right lane polygon
     points3 = np.array([
-       [x1+x_offset*2  ,y1],
-       [x1+x_offset*2  ,y2],
-       [x2+x_offset*2  ,y2],
-       [x2+x_offset*2  ,y1]
+       [x1+x_offset*2-6  ,y1],
+       [x1+x_offset*2-6  ,y2],
+       [x2+x_offset*2-6  ,y2],
+       [x2+x_offset*2-6  ,y1]
     ])
 
     #second bottom left lane polygon
     points2 = np.array([
-       [x1+x_offset  ,y1],
-       [x1+x_offset  ,y2],
-       [x2+x_offset  ,y2],
-       [x2+x_offset  ,y1]
+       [x1+x_offset-3  ,y1],
+       [x1+x_offset-3  ,y2],
+       [x2+x_offset-3  ,y2],
+       [x2+x_offset-3  ,y1]
     ])
 
     #bottom left lane polygon
