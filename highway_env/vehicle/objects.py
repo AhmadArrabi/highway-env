@@ -160,6 +160,22 @@ class RoadObject(ABC):
        [-470    ,240]
     ])
 
+    #Everything at the top
+    points9 = np.array([
+       [170.0-330.0 , -240+115],
+       [170-330 , -240],
+       [170     , -240],
+       [170     , -240+115]
+    ])
+
+    #Everything at the bottom
+    points10 = np.array([
+       [-100.0 , 240-115],
+       [-100 , 240],
+       [170     , 240],
+       [170     , 240-115]
+    ])
+
     #top right polygon
     points8 = np.array([
        [x1+x_offset*3-9  ,-y1],
@@ -236,7 +252,9 @@ class RoadObject(ABC):
                 points5,
                 points6,
                 points7,
-                points8]   
+                points8,
+                points9,
+                points10]   
     
     #check collision with yellow lines 
     def _is_line_colliding(self,dt):#other

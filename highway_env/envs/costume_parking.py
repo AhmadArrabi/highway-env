@@ -42,7 +42,7 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
             "steering_range": np.deg2rad(30),
             "simulation_frequency": 15,
             "policy_frequency": 5,
-            "duration": 1000,#MAX STEPS
+            "duration": 50,#MAX STEPS
             "screen_width": 640, #640 x 480 same as output of the prepeocessed image (can be adjusted in the preprocess function)
             "screen_height": 480,
             "centering_position": [0.5, 0.5],
@@ -65,6 +65,18 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         self.goal_flag = False
         self.right_flag = False
         self.moving_flag_1 = False
+
+        #self.GoalState = np.array([124.0, 123.0, 136.0, 137.0, 90.0, -165.0,   50.0])#Task2 booz
+        self.GoalState = np.array([158.0, 164.0, 349.0, 344.0, -30.0, -50.0,   -30.0])#Task1 
+
+        self.REWARD_WEIGHTS = np.array([0.05, #Dist1
+            0.05,  #Dist2
+            0.05,  #Dist3
+            0.05,  #Dist4
+            1.0,  #Heading
+            0.9,  #X
+            0.8]) #Y
+
         self._create_road()
         self._create_vehicles()
         self.Rd = np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position)
@@ -107,21 +119,16 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         self.controlled_vehicles = []
         for i in range(self.config["controlled_vehicles"]):
             #vehicle = self.action_type.vehicle_class(self.road, [np.random.uniform(low=-140, high=-180), np.random.uniform(low=-20, high=0)], np.deg2rad(np.random.uniform(low=-100, high=-80)), 0) #TOO RANDOM
-            #vehicle = self.action_type.vehicle_class(self.road, [-300, 50], 0, 0)#INITIAL PARKING [-300, 50]
-            vehicle = self.action_type.vehicle_class(self.road, [-50, -40], np.deg2rad(np.random.uniform(low=-35, high=-46)), 0) #TASK2
+            vehicle = self.action_type.vehicle_class(self.road, [-220 , 50],  0, 0) #INITIAL PARKING
+            #vehicle = self.action_type.vehicle_class(self.road, [-165 , -50], 0, 0) #INITIAL PARKING BOOZ
+            #vehicle = self.action_type.vehicle_class(self.road, [-50, -40], np.deg2rad(np.random.uniform(low=-35, high=-30)), 0) #TASK2
+            #vehicle = self.action_type.vehicle_class(self.road, [-40, -30], np.deg2rad(-30), 0) #TASK2 new attempt
+            #vehicle = self.action_type.vehicle_class(self.road, [-50.0, 30.0], np.deg2rad(30), 0) #TASK2 booz
             #vehicle = self.action_type.vehicle_class(self.road, [np.random.uniform(low=-170, high=-160), -5], np.deg2rad(np.random.uniform(low=-94, high=-86)), 0) #TASK 3
             self.road.vehicles.append(vehicle)
             #To add vehicles/ maybe occupied unocupied parkings
             #vehicle2 = self.action_type.vehicle_class(self.road, [-162, -175], np.deg2rad(-90), 0)
             #self.road.vehicles.append(vehicle2)
-            #vehicle3 = self.action_type.vehicle_class(self.road, [-52, -175], np.deg2rad(-90), 0)
-            #self.road.vehicles.append(vehicle3)
-            #vehicle4 = self.action_type.vehicle_class(self.road, [58, -175], np.deg2rad(-90), 0)
-            #self.road.vehicles.append(vehicle4)
-            #vehicle5 = self.action_type.vehicle_class(self.road, [-52, 175], np.deg2rad(-90), 0)
-            #self.road.vehicles.append(vehicle5)
-            #vehicle6 = self.action_type.vehicle_class(self.road, [58, 175], np.deg2rad(-90), 0)
-            #self.road.vehicles.append(vehicle6)
             self.controlled_vehicles.append(vehicle)
 
         lane = self.road.network.get_lane(['a','b',0]) #self.np_random.choice(self.road.network.lanes_list())
@@ -155,8 +162,18 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
 
         self.D_old = self.D_new
 
-    def compute_reward(self, obs: np.ndarray) -> float:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict, p: float = 0.5
-        #Task 3----------------------------------KEEP-------------------------------------------------------
+    def compute_reward(self, obs: np.ndarray) -> float:
+        #TASK BOOZ-----------------------------KEEP----------------------------------------------Any goal state
+        _obs = np.array(list(obs.items()))[:,1]
+        _obs_temp =  np.append(_obs[0], _obs[1])
+        _obs =  np.append(_obs_temp, _obs[2])
+
+        if self.controlled_vehicles[0].crashed: return -2500.0
+        if self._is_success(obs): return 5000.0
+        #elif self.steps >= self.config["duration"]: return -2000.0
+        else: return -np.power(np.dot(np.abs(_obs - self.GoalState), self.REWARD_WEIGHTS), 0.5)
+
+        #Task 3----------------------------------KEEP-------------------------------------------------
         #Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90.0)
         #Rx = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
         #Rd = np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position))
@@ -170,27 +187,28 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         #    return 1/((Ra + Rx + 1.01*Rd)/1000.0)
         #else:
         #    return -5
-  #
+#
         #TASK 2-----------------------------KEEP----------------------------------------------
-        Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90.0)
-        Rx = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
-        
-        best_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -87) & \
-            (np.rad2deg(self.controlled_vehicles[0].heading) > -93) & \
-                (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 3.0)
-            
-        if self.controlled_vehicles[0].crashed: return -2500.0
-        elif self._is_success(obs): return 5000.0
-
-        self.is_moving_2()
-
-        if best_position:
-            return 1/((Ra+Rx)/100.0) + 25.0
-        elif self.moving_flag_1:
-            return 1/((Ra+Rx)/100.0)      #((Ra+Rx)/100)
-        else:
-            return -1
-    
+        #Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 90.0)
+        #Rx = np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0])
+#
+        #print("GOAL POSITION: ", self.goal.position)
+        #best_position = (np.rad2deg(self.controlled_vehicles[0].heading) < -87) & \
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) > -93) & \
+        #        (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 3.0)
+        #    
+        #if self.controlled_vehicles[0].crashed: return -2500.0
+        #elif self._is_success(obs): return 5000.0
+#
+        #self.is_moving_2()
+#
+        #if best_position:
+        #    return 1/((Ra+Rx)/100.0) + 25.0
+        #if self.moving_flag_1:
+        #    return 1/((Ra+Rx)/100.0)      #((Ra+Rx)/100)
+        #else:
+        #    return -1
+    #
         #Task 1----------------------------------KEEP-------------------------------------------------------
         #Ra = np.abs(np.rad2deg(self.controlled_vehicles[0].heading) + 45.0)
         #Rx = np.abs(self.controlled_vehicles[0].position[0] + 70.0)
@@ -447,20 +465,25 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         
 
     def _is_success(self, obs) -> bool:#self, achieved_goal: np.ndarray, desired_goal: np.ndarray
+        #TASK BOOZ
+        #return (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 1) &\
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) > 89) & \
+        #        (np.rad2deg(self.controlled_vehicles[0].heading) < 91) 
+
         #TASK3
-        #return (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 20 ) &\
-        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -88) &\
+        #return (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 20 ) and \
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -88) and \
         #        (np.rad2deg(self.controlled_vehicles[0].heading) > -92)
 
         #TASK2
-        return (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 1) &\
-            (np.rad2deg(self.controlled_vehicles[0].heading) < -89) & \
-                (np.rad2deg(self.controlled_vehicles[0].heading) > -91) 
+        #return (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 1) &\
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -89) & \
+        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -91) 
         
         #TASK1
-        #return (np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-70, -40]))) < 1 &\
-        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -44) & \
-        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -46) 
+        return (np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-50, -30]))) < 1 &\
+            (np.rad2deg(self.controlled_vehicles[0].heading) < -28) & \
+                (np.rad2deg(self.controlled_vehicles[0].heading) > -32) 
                 
         #all(obs<20)#all(achieved_goal<=desired_goal)
 

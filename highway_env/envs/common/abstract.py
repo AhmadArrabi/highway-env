@@ -173,8 +173,8 @@ class AbstractEnv(gym.Env):
             "crashed": self.vehicle.crashed,
             "action": action,
             "obseravtions": obs,
-            "Lane crash": self.vehicle.crashed2,
-            "Heading:": np.rad2deg(self.vehicle.heading)
+            "Lane crash": self.vehicle.crashed2
+            #"Heading:": np.rad2deg(self.vehicle.heading)
         }
         try:
             info["cost"] = self._cost(action)

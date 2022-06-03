@@ -1,5 +1,5 @@
 from itertools import product
-from turtle import shape
+from turtle import left, shape
 from typing import List, Dict, TYPE_CHECKING, Optional, Union, Tuple
 from gym import spaces
 import numpy as np
@@ -607,7 +607,7 @@ class ParkingDistanceObservation(ObservationType):
         super().__init__(env)
         
     def space(self) -> spaces.Space:
-        self.distance_observation_space = spaces.Box(shape=(4,), low=0, high=400, dtype=np.float32)
+        self.distance_observation_space = spaces.Box(shape=(4,), low=0, high=600, dtype=np.float32)
         self.heading_observation_space = spaces.Box(shape=(1,), low=-180, high=180, dtype=np.float32)
         self.position_observation_space = spaces.Box(shape=(2,), low=-500, high=300, dtype=np.float32)
         self.observation_space = spaces.Dict({ 
@@ -633,26 +633,43 @@ class ParkingDistanceObservation(ObservationType):
         #left_lane = self.observer_vehicle.Obstacles[8]
         #right_lane = self.observer_vehicle.Obstacles[9]
 
+        #bottom
         bottom_left_point = left_lane[3]
         top_left_point = left_lane[2]
         top_right_point = right_lane[1]
         bottom_right_point = right_lane[0]
 
+        #top
+        #bottom_left_point = left_lane[2]
+        #top_left_point = left_lane[3]
+        #top_right_point = right_lane[0]
+        #bottom_right_point = right_lane[1]
+
         polygon = self.observer_vehicle.polygon()
 
+        #top
+        #obs[1] = np.linalg.norm(polygon[0] - bottom_left_point)
+        #obs[0] = np.linalg.norm(polygon[1] - bottom_right_point)
+        #obs[3] = np.linalg.norm(polygon[2] - top_right_point)
+        #obs[2] = np.linalg.norm(polygon[3] - top_left_point)
+        
+        #bottom
         obs[0] = np.linalg.norm(polygon[0] - top_right_point)
         obs[1] = np.linalg.norm(polygon[1] - top_left_point)
         obs[2] = np.linalg.norm(polygon[2] - bottom_left_point)
         obs[3] = np.linalg.norm(polygon[3] - bottom_right_point)
         
         obs2 = np.ndarray(shape=(1,))
+        
         #obs2[0] = -np.rad2deg(self.observer_vehicle.heading) #top
         obs2[0] = np.rad2deg(self.observer_vehicle.heading) #bottom
 
         obs3 = np.ndarray(shape=(2,))
         #obs3[0] = self.observer_vehicle.position[0]-150 #second bottom left parking
+        #obs3[0] = self.observer_vehicle.position[0]-300 #bottom right parking
         obs3[0] = self.observer_vehicle.position[0] #bottom left parking
-        obs3[1] = self.observer_vehicle.position[1]
+        obs3[1] = self.observer_vehicle.position[1] #bottom
+        #obs3[1] = -self.observer_vehicle.position[1] #top
 
         my_observation = {
             "Distances": obs,
