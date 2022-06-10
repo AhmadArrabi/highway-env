@@ -1,0 +1,65 @@
+frontRight -> Blue
+frontLeft -> Green
+backRight -> Red
+backLeft -> Purple
+--------------------------
+
+
+Action:  0         Speed:  -10.0        Angle:  -30 Back Sim:Left
+Action:  1         Speed:  0.0           Angle:  -30
+Action:  2         Speed:  10.0         Angle:  -30
+
+Action:  3         Speed:  -10.0        Angle:  -20
+Action:  4         Speed:  0.0           Angle:  -20
+Action:  5         Speed:  10.0         Angle:  -20
+
+Action:  6         Speed:  -10.0        Angle:  -10
+Action:  7         Speed:  0.0            Angle:  -10
+Action:  8         Speed:  10.0          Angle:  -10
+
+Action:  9         Speed:  -10.0         Angle:  0
+Action:  10       Speed:  0.0          Angle:  0
+Action:  11       Speed:  10.0        Angle:  0
+
+Action:  12       Speed:  -10.0      Angle:  10
+Action:  13       Speed:  0.0          Angle:  10
+Action:  14       Speed:  10.0        Angle:  10
+
+Action:  15       Speed:  -10.0       Angle:  20
+Action:  16       Speed:  0.0          Angle:  20
+Action:  17       Speed:  10.0        Angle:  20
+
+Action:  18       Speed:  -10.0       Angle:  30
+Action:  19       Speed:  0.0           Angle:  30
+Action:  20       Speed:  10.0         Angle:  30
+
+
+
+2 -> 17 -> 9
+
+
+
+
+0,0	640,0	0,480	640,480	
+
+
+
+
+
+print("IN")
+                            print(result[0])
+                            TEMP_POINTS = result[0]
+                            min_X_points = None
+                            max_X_points = None
+                            TEMP_POINTS.sort(axis=1)
+                            TEMP_POINTS = TEMP_POINTS[TEMP_POINTS[:, 0].argsort()]
+                            min_X_points = TEMP_POINTS[:2]
+                            min_X_points = min_X_points[min_X_points[:, 1].argsort()]
+                            max_X_points = TEMP_POINTS[2:]
+                            max_X_points = max_X_points[max_X_points[:, 1].argsort()]
+                            print(min_X_points)
+                            print(max_X_points)                          
+                            backLeft = (min_X_points[0][0],min_X_points[0][1])
+                            backRight = (min_X_points[1][0],min_X_points[1][1])
+                            frontLeft = (max_X_points[0][0],max_X_points[0][1])
+                            frontRight = (max_X_points[1][0],max_X_points[1][1])
