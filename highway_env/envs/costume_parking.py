@@ -471,9 +471,9 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         #        (np.rad2deg(self.controlled_vehicles[0].heading) < 91) 
 
         #TASK3
-        #return (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 20 ) and \
-        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -88) and \
-        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -92)
+        return (np.linalg.norm(self.controlled_vehicles[0].position[0:2] - self.goal.position) <= 20 ) and \
+            (np.rad2deg(self.controlled_vehicles[0].heading) < -88) and \
+                (np.rad2deg(self.controlled_vehicles[0].heading) > -92)
 
         #TASK2
         #return (np.abs(self.controlled_vehicles[0].position[0] - self.goal.position[0]) < 1) &\
@@ -481,9 +481,9 @@ class CostumeParkingEnv(AbstractEnv):#,GoalEnv
         #        (np.rad2deg(self.controlled_vehicles[0].heading) > -91) 
         
         #TASK1
-        return (np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-50, -30]))) < 1 &\
-            (np.rad2deg(self.controlled_vehicles[0].heading) < -28) & \
-                (np.rad2deg(self.controlled_vehicles[0].heading) > -32) 
+        #return (np.float32(np.linalg.norm(self.controlled_vehicles[0].position[0:2] - [-50, -30]))) < 1 &\
+        #    (np.rad2deg(self.controlled_vehicles[0].heading) < -28) & \
+        #        (np.rad2deg(self.controlled_vehicles[0].heading) > -32) 
                 
         #all(obs<20)#all(achieved_goal<=desired_goal)
 

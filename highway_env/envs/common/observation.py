@@ -607,7 +607,7 @@ class ParkingDistanceObservation(ObservationType):
         super().__init__(env)
         
     def space(self) -> spaces.Space:
-        self.distance_observation_space = spaces.Box(shape=(4,), low=0, high=600, dtype=np.float32)
+        self.distance_observation_space = spaces.Box(shape=(4,), low=0, high=400, dtype=np.float32)
         self.heading_observation_space = spaces.Box(shape=(1,), low=-180, high=180, dtype=np.float32)
         self.position_observation_space = spaces.Box(shape=(2,), low=-500, high=300, dtype=np.float32)
         self.observation_space = spaces.Dict({ 

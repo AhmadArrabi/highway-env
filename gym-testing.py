@@ -1,3 +1,4 @@
+from pyexpat import model
 import gym
 import random
 from sqlalchemy import false
@@ -41,7 +42,7 @@ log_path = os.path.join("training", "logs")
 model_name = "Task_1_100_freq" 
 model_path = os.path.join("training", "saved_models", model_name)
 
-model_name_2 = "Optimal_task2" 
+model_name_2 = "Task_2_50_freq" 
 model_path_2 = os.path.join("training", "saved_models", model_name_2)
 
 model_name_3 = "Task_3_50_freq_2" 
@@ -55,9 +56,9 @@ print(check_env(env))
 #model = PPO("MultiInputPolicy", env, verbose=1, tensorboard_log=log_path, gamma=0.75)#MlpPolicy
 #model = PPO.load(f"{model_path_booz}/99000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
 
-Task_1 = PPO.load(f"{model_path_booz}/99000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
-Task_2 = PPO.load(f"{model_path_2}/99000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
-#Task_3 = PPO.load(f"{model_path_3}/145000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+Task_1 = PPO.load(f"{model_path}/195000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+Task_2 = PPO.load(f"{model_path_2}/295000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
+Task_3 = PPO.load(f"{model_path_3}/145000", env=env) #add-1.5mil #650000 peak1 940000 peak2 = 2.
 
 TIMESTEPS = 1000
 
@@ -78,11 +79,11 @@ while not done:
     env.render()
     obs, rewards, done, info = env.step(action)
 
-    #if (np.abs(obs['Heading']) < 92) & (np.abs(obs['Heading']) > 88) or do3:# & (np.abs(obs['Position'][0] - -165)<5) :
-    #    do3=True
-    #    print('TASK 3')
-    #    action, _states = Task_3.predict(obs)
-    if ((np.abs(obs['Heading']) > 20) and (obs['Position'][0]>-95))or do2:
+    if (np.abs(obs['Heading']) < 92) and (np.abs(obs['Heading']) > 88) or do3:# & (np.abs(obs['Position'][0] - -165)<5) :
+        do3=True
+        print('TASK 3')
+        action,_s = Task_3.predict(obs)
+    elif ((np.abs(obs['Heading']) > 20)) or do2:# and (obs['Position'][0]>-95)
         do2=True
         print('TASK 2')
         action, _states = Task_2.predict(obs)

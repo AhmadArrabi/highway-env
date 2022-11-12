@@ -116,7 +116,7 @@ class RoadObject(ABC):
         if line_intersecting:
             if self.solid:
                 self.crashed = True
-                self.crashed2 = True #Uncomment if you want to give penalty for line collisions not a crash
+                #self.crashed2 = True #Uncomment if you want to give penalty for line collisions not a crash
             if not self.solid:
                 self.hit = True
         else: self.crashed2 = False #Uncomment if you want to give penalty for line collisions not a crash
